@@ -1,337 +1,558 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>أكاديمية الأبطال لكرة القدم</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    body { font-family: system-ui, -apple-system, sans-serif; background-color: #0f172a; color: #f8fafc; }
-    .fifa-card {
-      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-      border: 2px solid #eab308;
-      box-shadow: 0 10px 25px -5px rgba(234, 179, 8, 0.15);
-    }
-    .badge-pos {
-      background: linear-gradient(45deg, #eab308, #ca8a04);
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b1220">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>أكاديمية الأبطال لكرة القدم</title>
+<style>
+:root{--r:14px;--frame:#eab308;--ph:96px;--ir:50%;--ib:2px;--sh:200px;--fit:cover;--bg:#0b1220;--card:#131d33;--line:#243049;--tx:#f1f5f9;--mute:#94a3b8;--em:#10b981;--gold:#eab308;--red:#f87171}
+*{box-sizing:border-box;margin:0}
+body{font-family:Cairo,"Segoe UI",Tahoma,system-ui,sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;padding-bottom:84px;line-height:1.5}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.i{width:1.1em;height:1.1em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:-.18em}
+.wrap{max-width:480px;margin:0 auto;padding:0 16px}
+header{position:sticky;top:0;z-index:30;background:rgba(11,18,32,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+header .wrap{display:flex;align-items:center;gap:10px;height:62px}
+.logo{width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid var(--frame)}
+.brand{flex:1}.brand b{display:block;font-size:15px}.brand small{color:var(--em);font-size:11px}
+.role{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:6px 12px;border-radius:99px;border:1px solid rgba(234,179,8,.4);color:var(--gold)}
+.role.on{background:var(--gold);color:#1a1200}
+.hero{position:relative;height:150px;margin:16px 0;border-radius:var(--r);overflow:hidden;background:var(--card)}
+.hero img{width:100%;height:100%;object-fit:cover}
+.hero div{position:absolute;inset:auto 0 0 0;padding:28px 14px 12px;background:linear-gradient(transparent,rgba(11,18,32,.95));font-size:13px;font-weight:700}
+.hero span{color:var(--em)}
+.bar{display:flex;gap:8px;margin-bottom:14px}
+.field{position:relative;flex:1}
+.field .i{position:absolute;right:11px;top:11px;color:var(--mute)}
+input,select{width:100%;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-size:13px}
+.field input{padding-right:34px}
+select{width:auto}
+input:focus,select:focus{border-color:var(--em);outline:0}
+.title{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.title h2{font-size:14px;display:flex;gap:8px;align-items:center}.title h2 .i{color:var(--em)}
+.btn{background:var(--em);color:#fff;font-weight:700;font-size:12px;padding:7px 12px;border-radius:10px;display:inline-flex;gap:6px;align-items:center}
+.btn:hover{filter:brightness(1.12)}
+.btn.ghost{background:var(--card);border:1px solid var(--line);color:var(--mute)}
+[hidden]{display:none!important}
+.list{display:grid;gap:10px}
+.card{background:linear-gradient(135deg,var(--card),#0f1729);border:1px solid var(--line);border-radius:var(--r);padding:12px;display:flex;gap:12px;align-items:center}
+.pl{border-color:var(--frame);cursor:pointer}
+.av{width:var(--ph);height:var(--ph);border-radius:var(--ir);object-fit:cover;border:var(--ib) solid var(--frame);flex:none;background:var(--line)}
+.info{flex:1;min-width:0}
+.name{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.name b{color:var(--gold);font-size:14px}
+.pos{background:var(--gold);color:#1a1200;font-size:10px;font-weight:800;padding:1px 7px;border-radius:5px}
+.meta{font-size:11px;color:var(--mute);margin-top:2px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;font-size:10px;color:#cbd5e1}
+.stats i{display:block;height:4px;border-radius:4px;background:var(--line);margin-top:3px;overflow:hidden}
+.stats i::after{content:"";display:block;height:100%;width:var(--v);background:var(--em)}
+.star{color:var(--mute);padding:8px;border-radius:8px}.star.on{color:var(--gold)}.star.on .i{fill:var(--gold)}
+.week{position:relative;height:130px;margin-bottom:14px;border-radius:var(--r);overflow:hidden;border:1px solid var(--frame)}
+.week img{width:100%;height:100%;object-fit:cover}
+.week div{position:absolute;inset:auto 0 0 0;padding:26px 14px 10px;background:linear-gradient(transparent,rgba(11,18,32,.95));font-size:12px;color:var(--gold)}
+.week b{display:block;color:var(--tx);font-size:15px}
+.x{color:var(--red);padding:8px;border-radius:8px}.x:hover{background:rgba(248,113,113,.1)}
+.ses h4{color:var(--em);font-size:13px}.ses p{font-size:11px;color:var(--mute);margin-top:3px}
+.ses.past{opacity:.5}
+.empty{text-align:center;color:var(--mute);font-size:12px;padding:32px 0}
+nav{position:fixed;inset:auto 0 0 0;z-index:30;background:rgba(11,18,32,.96);backdrop-filter:blur(8px);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+nav .wrap{display:flex;justify-content:space-around}
+nav button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 28px;font-size:11px;font-weight:700;color:var(--mute)}
+nav button .i{font-size:20px}
+nav button[aria-selected=true]{color:var(--em)}
+dialog{margin:auto;width:min(92vw,420px);background:#0f1729;color:var(--tx);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+dialog::backdrop{background:rgba(0,0,0,.7)}
+dialog form{display:grid;gap:12px}
+dialog h3{color:var(--gold);font-size:14px;border-bottom:1px solid var(--line);padding-bottom:8px}
+label{display:block;font-size:11px;color:var(--mute)}label input,label select{margin-top:4px;width:100%}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.err{color:var(--red);font-size:12px}
+.acts{display:flex;gap:8px}.acts .btn{flex:1;justify-content:center;padding:9px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+.brand b{font-size:12px;line-height:1.35}
+.btn.gold{background:var(--gold);color:#1a1200}.btn.gold:hover{background:#facc15}
+#splash{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background-size:cover;background-position:center;padding:20px}
+#splash .sp{width:min(100%,380px);text-align:center;display:grid;gap:12px}
+.sp-logo{width:120px;height:120px;border-radius:50%;object-fit:cover;border:3px solid var(--frame);margin:0 auto;box-shadow:0 0 40px rgba(234,179,8,.25)}
+#splash h1{font-size:21px;line-height:1.4}#splash p{color:var(--em);font-size:13px;margin-bottom:10px}
+.big{justify-content:center;padding:13px;font-size:15px;border-radius:12px}
+.set{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:12px;display:grid;gap:10px}
+.set h3{font-size:13px;color:var(--gold)}
+.row{display:flex;gap:8px;align-items:center}.row input[type=text],.row>input:not([type]){flex:1;min-width:0}
+.row input[type=checkbox]{width:18px;height:18px;flex:none;accent-color:var(--em)}
+.row small{color:var(--mute);font-size:11px;white-space:nowrap}
+.thumb{width:44px;height:44px;border-radius:8px;object-fit:cover;flex:none}
+.row label{flex:1}
+.up{font-size:11px;color:var(--mute)}.up input{padding:5px;font-size:11px}
+.prev{width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid var(--gold);display:block;margin:0 auto 6px}
+.acts .btn.danger{background:#991b1b}
+dialog form{max-height:80vh;overflow:auto}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.cnt{font-size:12px;color:var(--mute);margin:-6px 0 12px}.cnt span{color:var(--em);font-weight:700}
+.slides{position:relative;overflow:hidden;border-radius:var(--r);border:1px solid var(--frame);margin:16px 0;height:var(--sh);background:var(--card)}
+.sl{position:absolute;inset:0;opacity:0;transition:opacity .6s}.sl.on{opacity:1}
+.sl img{width:100%;height:100%;object-fit:var(--fit)}
+.sl p{position:absolute;inset:auto 0 0;padding:26px 14px 10px;background:linear-gradient(transparent,rgba(11,18,32,.9));font-size:13px;font-weight:700}
+.dots{position:absolute;top:8px;left:0;right:0;display:flex;justify-content:center;gap:6px}
+.dots button{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.45)}.dots button.on{background:var(--frame)}
+.act{display:flex;flex-direction:column}
+.stats .d{grid-column:1/-1}
+.det{padding:0;overflow:hidden}.det .cl{position:absolute;top:10px;left:10px;z-index:2;width:34px;height:34px;border-radius:50%;background:rgba(11,18,32,.75);color:#fff}
+.big-ph{display:block;width:100%;aspect-ratio:1;max-height:52vh;object-fit:cover;border-bottom:var(--ib) solid var(--frame)}
+.det .bd{padding:16px;display:grid;gap:10px;max-height:38vh;overflow:auto}
+.det h3{border:0;padding:0;font-size:18px}.det .stats{font-size:13px;margin-top:0}
+input[type=color]{padding:2px;height:34px}input[type=range]{padding:0;accent-color:var(--em)}
+</style>
 </head>
-<body class="pb-24">
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></symbol>
+<symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+<symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 22s7-6.5 7-12a7 7 0 0 0-14 0c0 5.5 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+<symbol id="i-star" viewBox="0 0 24 24"><path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/></symbol>
+<symbol id="i-edit" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></symbol>
+<symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></symbol>
+</svg>
 
-  <!-- الهيدر العلوي -->
-  <header class="bg-slate-900 border-b border-slate-800 p-4 sticky top-0 z-50 shadow-lg flex justify-between items-center max-w-md mx-auto">
-    <div class="flex items-center space-x-2 space-x-reverse">
-      <div class="w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-500 flex items-center justify-center">
-        <i class="fa-solid fa-futbol text-emerald-400 text-xl"></i>
-      </div>
-      <div>
-        <h1 class="font-bold text-base text-white leading-tight">أكاديمية الأبطال</h1>
-        <p class="text-[10px] text-emerald-400">رعاية وتطوير المواهب</p>
-      </div>
+<div id="splash"><div class="sp">
+  <img id="spLogo" class="sp-logo" alt="الشعار"><h1 id="spName"></h1><p id="spTag"></p>
+  <button class="btn big" id="goVisitor" type="button">الدخول كزائر</button>
+  <button class="btn big gold" id="goAdmin" type="button">الدخول كأدمن</button>
+  <button class="btn ghost big" id="instBtn" type="button">تثبيت التطبيق على الشاشة الرئيسية</button>
+</div></div>
+
+<header><div class="wrap">
+  <img class="logo" id="hLogo" alt="الشعار">
+  <div class="brand"><b id="hName"></b><small id="hTag"></small></div>
+  <button id="role" class="role" type="button">خروج</button>
+</div></header>
+
+<main class="wrap">
+  <section id="tab-players" role="tabpanel">
+    <div class="slides" id="slides" aria-label="عرض الصور"></div>
+    <p class="cnt" id="heroTxt"></p>
+    <div id="week" class="week" hidden><img id="imWeek" alt="لاعب الأسبوع"><div>لاعب الأسبوع<b id="weekName"></b></div></div>
+    <div class="bar">
+      <div class="field"><svg class="i"><use href="#i-search"/></svg><input id="q" type="search" placeholder="ابحث عن لاعب..." aria-label="بحث عن لاعب"></div>
+      <select id="pos" aria-label="تصفية حسب المركز"></select>
     </div>
-    
-    <!-- زر التحكم بالدور -->
-    <button id="roleToggleBtn" onclick="handleRoleToggle()" class="bg-slate-800 hover:bg-slate-700 text-xs text-amber-400 px-3 py-1.5 rounded-full border border-amber-500/30 font-semibold transition flex items-center gap-1.5">
-      <i class="fa-solid fa-user-shield"></i> <span id="roleLabel">وضع المشاهد</span>
-    </button>
-  </header>
+    <div class="title"><h2><svg class="i"><use href="#i-users"/></svg>قائمة اللاعبين</h2>
+      <button class="btn admin" id="addP" type="button" hidden><svg class="i"><use href="#i-plus"/></svg>لاعب جديد</button></div>
+    <div id="grid" class="list"></div>
+  </section>
 
-  <!-- محتوى التطبيق -->
-  <main class="p-4 max-w-md mx-auto space-y-4">
+  <section id="tab-schedule" role="tabpanel" hidden>
+    <div class="hero"><img id="imCeleb" alt="صورة التمارين"><div>التمارين والمباريات</div></div>
+    <div class="title"><h2><svg class="i"><use href="#i-cal"/></svg>جدول التمارين والمباريات</h2>
+      <button class="btn admin" id="addS" type="button" hidden><svg class="i"><use href="#i-plus"/></svg>إضافة موعد</button></div>
+    <div id="sessions" class="list"></div>
+  </section>
 
-    <!-- شاشة قائمة اللاعبين -->
-    <section id="tab-players" class="space-y-4">
-      <!-- شريط البحث والتصفية -->
-      <div class="flex gap-2">
-        <div class="relative flex-1">
-          <i class="fa-solid fa-magnifying-glass absolute right-3 top-3 text-slate-400 text-xs"></i>
-          <input type="text" id="searchInput" oninput="filterPlayers()" placeholder="ابحث عن لاعب..." class="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 pr-8 pl-3 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-emerald-500">
-        </div>
-        <select id="positionFilter" onchange="filterPlayers()" class="bg-slate-800 border border-slate-700 rounded-xl px-2 text-xs text-slate-300 focus:outline-none focus:border-emerald-500">
-          <option value="ALL">كل المراكز</option>
-          <option value="مهاجم">مهاجم</option>
-          <option value="خط وسط">خط وسط</option>
-          <option value="مدافع">مدافع</option>
-          <option value="حارس مرمى">حارس مرمى</option>
-        </select>
-      </div>
+  <section id="tab-settings" role="tabpanel" hidden>
+    <div class="title"><h2><svg class="i"><use href="#i-gear"/></svg>الإعدادات</h2></div>
+    <div id="setPanel"></div>
+  </section>
+</main>
 
-      <!-- ترويسة القسم الإدارية -->
-      <div class="flex justify-between items-center">
-        <h2 class="font-bold text-sm text-slate-200 flex items-center gap-2">
-          <i class="fa-solid fa-users text-emerald-400"></i> قائمة نجوم الأكاديمية
-        </h2>
-        <button id="addPlayerBtn" onclick="openModal()" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3 py-1.5 rounded-lg font-semibold shadow-lg shadow-emerald-600/20 transition flex items-center gap-1">
-          <i class="fa-solid fa-plus"></i> لاعب جديد
-        </button>
-      </div>
+<nav><div class="wrap" role="tablist">
+  <button role="tab" data-tab="players" aria-selected="true"><svg class="i"><use href="#i-users"/></svg>اللاعبون</button>
+  <button role="tab" data-tab="schedule" aria-selected="false"><svg class="i"><use href="#i-cal"/></svg>التمارين</button>
+  <button role="tab" class="admin" data-tab="settings" aria-selected="false" hidden><svg class="i"><use href="#i-gear"/></svg>الإعدادات</button>
+</div></nav>
 
-      <!-- شبكة عرض بطاقات اللاعبين -->
-      <div id="playersGrid" class="space-y-3"></div>
-    </section>
+<dialog id="dPin"><form id="fPin" method="dialog">
+  <h3>دخول الأدمن</h3>
+  <label>كلمة المرور (4 أرقام)<input id="pinIn" type="password" inputmode="numeric" maxlength="4" autocomplete="off" required></label>
+  <p class="err" id="pinErr" hidden>كلمة المرور غير صحيحة. حاول مرة أخرى.</p>
+  <div class="acts"><button class="btn" type="submit">دخول</button><button class="btn ghost" type="button" data-close>إلغاء</button></div>
+</form></dialog>
 
-    <!-- شاشة مواعيد التمارين -->
-    <section id="tab-schedule" class="hidden space-y-4">
-      <div class="flex justify-between items-center">
-        <h2 class="font-bold text-sm text-slate-200 flex items-center gap-2">
-          <i class="fa-solid fa-calendar-days text-emerald-400"></i> جدول التمارين والمباريات
-        </h2>
-        <button id="addSessionBtn" onclick="openSessionModal()" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3 py-1.5 rounded-lg font-semibold shadow-lg shadow-emerald-600/20 transition flex items-center gap-1">
-          <i class="fa-solid fa-plus"></i> إضافة موعد
-        </button>
-      </div>
-      <div id="sessionsList" class="space-y-3"></div>
-    </section>
+<dialog id="dP"><form id="fP">
+  <h3 id="dPT"></h3>
+  <div><img class="prev" id="pPrev" alt=""><label class="up">صورة اللاعب (JPG)<input id="pFile" type="file" accept="image/jpeg,.jpg,.jpeg"></label></div>
+  <div id="pFields" style="display:grid;gap:12px"></div>
+  <div class="acts"><button class="btn" type="submit">حفظ</button><button class="btn ghost" type="button" data-close>إلغاء</button></div>
+</form></dialog>
 
-  </main>
-
-  <!-- نافذة إضافة لاعب (الأدمن) -->
-  <div id="playerModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-5 shadow-2xl space-y-4">
-      <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-        <h3 class="font-bold text-sm text-amber-400">إضافة لاعب جديد</h3>
-        <button onclick="closeModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
-      </div>
-      <form id="playerForm" onsubmit="savePlayer(event)" class="space-y-3">
-        <div>
-          <label class="block text-xs text-slate-400 mb-1">اسم اللاعب الكامل</label>
-          <input type="text" id="pName" required class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-xs text-white focus:border-emerald-500 outline-none">
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="block text-xs text-slate-400 mb-1">تاريخ الميلاد</label>
-            <input type="date" id="pDob" required onchange="calculateAge()" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-xs text-white focus:border-emerald-500 outline-none">
-          </div>
-          <div>
-            <label class="block text-xs text-slate-400 mb-1">العمر</label>
-            <input type="number" id="pAge" readonly class="w-full bg-slate-800/50 border border-slate-700 rounded-lg p-2 text-xs text-slate-400 outline-none">
-          </div>
-        </div>
-        <div>
-          <label class="block text-xs text-slate-400 mb-1">المركز المفضل</label>
-          <select id="pPosition" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-xs text-white focus:border-emerald-500 outline-none">
-            <option value="مهاجم">مهاجم (FW)</option>
-            <option value="خط وسط">خط وسط (MF)</option>
-            <option value="مدافع">مدافع (DF)</option>
-            <option value="حارس مرمى">حارس مرمى (GK)</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-xs text-slate-400 mb-1">رابط صورة اللاعب (اختياري)</label>
-          <input type="url" id="pPhoto" placeholder="https://..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-xs text-white focus:border-emerald-500 outline-none">
-        </div>
-        <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800">
-          <div>
-            <label class="block text-[10px] text-slate-400 mb-1">السرعة (1-99)</label>
-            <input type="number" id="pPace" min="1" max="99" value="75" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-1.5 text-xs text-white text-center">
-          </div>
-          <div>
-            <label class="block text-[10px] text-slate-400 mb-1">التسديد/التمرير (1-99)</label>
-            <input type="number" id="pSkill" min="1" max="99" value="80" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-1.5 text-xs text-white text-center">
-          </div>
-        </div>
-        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-xl transition text-xs">حفظ بيانات اللاعب</button>
-      </form>
-    </div>
+<dialog id="dS"><form id="fS">
+  <h3 id="dST"></h3>
+  <label>العنوان<input id="sTitle" required maxlength="60"></label>
+  <div class="two">
+    <label>التاريخ (اختياري)<input id="sDate" type="date"></label>
+    <label>الوقت (اختياري)<input id="sTime" type="time"></label>
   </div>
+  <label>اليوم أو ملاحظة (مثال: كل أحد وثلاثاء)<input id="sNote" maxlength="60"></label>
+  <label>المكان (اختياري)<input id="sLoc" maxlength="60"></label>
+  <div class="acts"><button class="btn" type="submit">حفظ</button><button class="btn ghost" type="button" data-close>إلغاء</button></div>
+</form></dialog>
 
-  <!-- شريط التنقل السفلي -->
-  <nav class="fixed bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-md border-t border-slate-800 flex justify-around py-3 max-w-md mx-auto z-40">
-    <button id="nav-players" onclick="switchTab('players')" class="flex flex-col items-center text-emerald-400 font-semibold text-xs transition">
-      <i class="fa-solid fa-users text-lg"></i>
-      <span class="text-[10px] mt-1">اللاعبون</span>
-    </button>
-    <button id="nav-schedule" onclick="switchTab('schedule')" class="flex flex-col items-center text-slate-400 hover:text-slate-200 font-semibold text-xs transition">
-      <i class="fa-solid fa-calendar-days text-lg"></i>
-      <span class="text-[10px] mt-1">التمارين</span>
-    </button>
-  </nav>
+<dialog id="dD" class="det"><button class="cl" data-close type="button" aria-label="إغلاق">✕</button><div id="dDB"></div></dialog>
+<dialog id="dI"><form method="dialog">
+  <h3>تثبيت التطبيق على الشاشة الرئيسية</h3>
+  <p class="up" style="font-size:13px;line-height:1.9"><b>آيفون (Safari):</b> زر المشاركة ثم «إضافة إلى الشاشة الرئيسية».<br><b>أندرويد (Chrome):</b> قائمة ⋮ ثم «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».<br>يعمل التثبيت عند فتح التطبيق عبر رابط https (مثل GitHub Pages) وليس من ملف على الجهاز.</p>
+  <div class="acts"><button class="btn" type="submit">حسنًا</button></div>
+</form></dialog>
+<script>
+const K = { p: 'academy_players', s: 'academy_sessions', f: 'academy_featured', c: 'academy_settings' };
+const D = {
+  name: 'أكاديمية الحملة الأردنية الهاشمية الرياضية للأيتام', tag: 'رعاية وتطوير المواهب', pin: '1234',
+  img: { logo: 'assets/logo.jpg', bg: 'assets/logo.jpg', team: 'assets/team-photo.jpg', celeb: 'assets/team-celebration.jpg', week: 'assets/player-of-week.jpg' },
+  positions: ['مهاجم', 'خط وسط', 'مدافع', 'حارس مرمى'],
+  fields: [
+    { k: 'dob', l: 'تاريخ الميلاد', t: 'date', on: true }, { k: 'position', l: 'المركز', t: 'select', on: true },
+    { k: 'pace', l: 'السرعة', t: 'number', on: true }, { k: 'skill', l: 'المهارة', t: 'number', on: true },
+    { k: 'phone', l: 'رقم التواصل', t: 'tel', on: true }
+  ],
+  slides: [{ id: 1, src: 'assets/team-photo.jpg', cap: 'صورة الفريق' }, { id: 2, src: 'assets/team-celebration.jpg', cap: 'احتفال الفريق' }, { id: 3, src: 'assets/player-of-week.jpg', cap: 'لاعب الأسبوع' }],
+  show: { on: true, h: 200, fit: 'cover', sec: 4 },
+  ui: { radius: 14, frame: '#eab308', card: '#131d33', accent: '#10b981', shape: 'circle', border: 2, size: 96, phone: false }
+};
+const IMG_LABELS = { logo: 'الشعار', bg: 'خلفية واجهة الدخول', celeb: 'صورة التمارين', week: 'صورة لاعب الأسبوع' };
+const AVATAR = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#243049"/><circle cx="32" cy="24" r="11" fill="#64748b"/><path d="M10 64c2-18 12-26 22-26s20 8 22 26z" fill="#64748b"/></svg>');
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+const ic = n => `<svg class="i"><use href="#i-${n}"/></svg>`;
+const today = () => new Date().toLocaleDateString('en-CA');
+const rd = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch { return d; } };
 
-  <script>
-    let isAdmin = false;
+const defPlayers = [
+  { id: 1, name: 'أحمد محمد', dob: '2014-05-12', position: 'مهاجم', pace: '85', skill: '82' },
+  { id: 2, name: 'عمر خالد', dob: '2015-08-20', position: 'خط وسط', pace: '78', skill: '88' }
+];
+const defSessions = [
+  { id: 1, title: 'تمرين اللياقة والتكنيك', date: '2026-11-10', time: '16:00', location: 'الملعب الرئيسي', note: '' },
+  { id: 2, title: 'مباراة وديّة حماسية', date: '2026-11-13', time: '17:00', location: 'ملعب الأكاديمية', note: '' }
+];
+function loadSettings() {
+  const c = rd(K.c, {}) || {};
+  const s = { ...D, ...c, img: { ...D.img, ...(c.img || {}) }, show: { ...D.show, ...(c.show || {}) }, ui: { ...D.ui, ...(c.ui || {}) } };
+  if (!/^\d{4}$/.test(s.pin)) s.pin = D.pin;
+  s.fields = (Array.isArray(c.fields) && c.fields.length ? c.fields : D.fields).map(f => ({ ...f }));
+  if (!s.fields.some(f => f.k === 'phone')) s.fields.push({ ...D.fields.find(f => f.k === 'phone') });
+  s.slides = (Array.isArray(c.slides) ? c.slides : D.slides).map(x => ({ ...x }));
+  if (!Array.isArray(s.positions)) s.positions = D.positions;
+  return s;
+}
+const arr = (k, d) => { const v = rd(k, d); return Array.isArray(v) ? v : d; };
+let S = loadSettings(), players = arr(K.p, defPlayers), sessions = arr(K.s, defSessions);
+let featured = String(rd(K.f, '') || ''), role = sessionStorage.getItem('academy_role') || '', photoTmp = '';
+const admin = () => role === 'admin';
+function persist() {
+  try {
+    localStorage.setItem(K.p, JSON.stringify(players)); localStorage.setItem(K.s, JSON.stringify(sessions));
+    localStorage.setItem(K.f, JSON.stringify(featured)); localStorage.setItem(K.c, JSON.stringify(S));
+    return true;
+  } catch { alert('مساحة التخزين ممتلئة. استخدم صورًا أصغر أو احذف بعض الصور.'); return false; }
+}
 
-    // البيانات الافتراضية للتجربة الأولية
-    const defaultPlayers = [
-      { id: 1, name: "أحمد محمد", dob: "2014-05-12", age: 12, position: "مهاجم", photo: "https://images.unsplash.com/photo-1543351611-c82394862a50?w=150&auto=format&fit=crop", pace: 85, skill: 82 },
-      { id: 2, name: "عمر خالد", dob: "2015-08-20", age: 11, position: "خط وسط", photo: "https://images.unsplash.com/photo-1508215141170-ee24490333d4?w=150&auto=format&fit=crop", pace: 78, skill: 88 }
-    ];
+/* قراءة صورة JPG وتصغيرها */
+const readJpg = (file, max, q) => new Promise((ok, no) => {
+  if (!file || !(file.type === 'image/jpeg' || /\.jpe?g$/i.test(file.name))) return no('jpg');
+  const r = new FileReader();
+  r.onerror = () => no('bad');
+  r.onload = () => {
+    const i = new Image();
+    i.onerror = () => no('bad');
+    i.onload = () => {
+      const k = Math.min(1, max / Math.max(i.width, i.height)), c = document.createElement('canvas');
+      c.width = Math.round(i.width * k); c.height = Math.round(i.height * k);
+      c.getContext('2d').drawImage(i, 0, 0, c.width, c.height);
+      ok(c.toDataURL('image/jpeg', q));
+    };
+    i.src = r.result;
+  };
+  r.readAsDataURL(file);
+});
+const imgErr = e => alert(e === 'jpg' ? 'اختر صورة بصيغة JPG فقط.' : 'تعذّر قراءة الصورة.');
 
-    const defaultSessions = [
-      { id: 1, title: "تمرين اللياقة والتكنيك", date: "2026-11-10", time: "04:00 مساءً", location: "الملعب الرئيسي" },
-      { id: 2, title: "مباراة وديّة حماسية", date: "2026-11-13", time: "05:00 مساءً", location: "ملعب الأكاديمية" }
-    ];
+function ageOf(dob) {
+  const b = new Date(dob), n = new Date();
+  if (isNaN(b)) return '';
+  let a = n.getFullYear() - b.getFullYear();
+  if (n.getMonth() < b.getMonth() || (n.getMonth() === b.getMonth() && n.getDate() < b.getDate())) a--;
+  return Math.max(a, 0);
+}
+const fmtDate = d => { const x = new Date(d + 'T00:00'); return isNaN(x) ? esc(d) : x.toLocaleDateString('ar', { weekday: 'long', day: 'numeric', month: 'long' }); };
+const fmtTime = t => /^\d{2}:\d{2}$/.test(t) ? new Date('1970-01-01T' + t).toLocaleTimeString('ar', { hour: 'numeric', minute: '2-digit' }) : esc(t);
 
-    // تحميل البيانات من LocalStorage
-    let players = JSON.parse(localStorage.getItem('academy_players')) || defaultPlayers;
-    let sessions = JSON.parse(localStorage.getItem('academy_sessions')) || defaultSessions;
+/* تطبيق الاسم والصور */
+function apply() {
+  document.title = S.name;
+  $('#spName').textContent = $('#hName').textContent = S.name;
+  $('#spTag').textContent = $('#hTag').textContent = S.tag;
+  $('#spLogo').src = $('#hLogo').src = S.img.logo;
+  $('#imCeleb').src = S.img.celeb; $('#imWeek').src = S.img.week;
+  applyUI(); renderSlides();
+  $('#splash').style.backgroundImage = `linear-gradient(rgba(11,18,32,.78),rgba(11,18,32,.93)),url("${S.img.bg}")`;
+}
 
-    function saveData() {
-      localStorage.setItem('academy_players', JSON.stringify(players));
-      localStorage.setItem('academy_sessions', JSON.stringify(sessions));
-    }
+function applyUI() {
+  const u = S.ui, r = document.documentElement.style;
+  r.setProperty('--r', u.radius + 'px'); r.setProperty('--frame', u.frame); r.setProperty('--card', u.card); r.setProperty('--em', u.accent);
+  r.setProperty('--ph', u.size + 'px'); r.setProperty('--ib', u.border + 'px');
+  r.setProperty('--ir', u.shape === 'circle' ? '50%' : u.shape === 'round' ? '18px' : '4px');
+  r.setProperty('--sh', S.show.h + 'px'); r.setProperty('--fit', S.show.fit);
+}
+let slideI = 0, slideT;
+function goSlide(i) {
+  slideI = i;
+  document.querySelectorAll('#slides .sl').forEach((x, k) => x.classList.toggle('on', k === i));
+  document.querySelectorAll('#slides .dots button').forEach((x, k) => x.classList.toggle('on', k === i));
+}
+function renderSlides() {
+  const el = $('#slides'), sl = S.slides;
+  clearInterval(slideT); el.hidden = !sl.length || !S.show.on;
+  if (el.hidden) return;
+  slideI = Math.min(slideI, sl.length - 1);
+  el.innerHTML = sl.map((s, i) => `<div class="sl ${i === slideI ? 'on' : ''}"><img src="${esc(s.src)}" alt="${esc(s.cap)}">${s.cap ? `<p>${esc(s.cap)}</p>` : ''}</div>`).join('') +
+    (sl.length > 1 ? `<div class="dots">${sl.map((_, i) => `<button type="button" data-dot="${i}" class="${i === slideI ? 'on' : ''}" aria-label="شريحة ${i + 1}"></button>`).join('')}</div>` : '');
+  if (sl.length > 1 && !matchMedia('(prefers-reduced-motion:reduce)').matches) slideT = setInterval(() => goSlide((slideI + 1) % sl.length), Math.max(2, S.show.sec) * 1000);
+}
+function openDetail(id) {
+  const p = players.find(x => String(x.id) === String(id)); if (!p) return;
+  const { posRow, body } = parts(p), ph = S.fields.find(f => f.k === 'phone');
+  const tel = ph && ph.on && p.phone && (admin() || S.ui.phone) ? `<a class="btn" style="justify-content:center;padding:10px" href="tel:${esc(String(p.phone).replace(/[^\d+]/g, ''))}">اتصال: ${esc(p.phone)}</a>` : '';
+  $('#dDB').innerHTML = `<img class="big-ph" src="${esc(p.photo || AVATAR)}" alt="${esc(p.name)}"><div class="bd"><div class="name"><h3>${esc(p.name)}</h3>${posRow ? `<span class="pos">${esc(posRow.v)}</span>` : ''}</div><div class="stats">${body}</div>${tel}</div>`;
+  $('#dD').showModal();
+}
+function parts(p) {
+  const rows = S.fields.filter(f => f.on && f.k !== 'phone' && p[f.k] !== undefined && p[f.k] !== '').map(f => ({ f, v: p[f.k] }));
+  const posRow = rows.find(r => r.f.k === 'position');
+  const body = rows.filter(r => r !== posRow).map(({ f, v }) => {
+    if (f.t === 'number' && Number(v) >= 0 && Number(v) <= 100) return `<div>${esc(f.l)} ${esc(v)}<i style="--v:${Number(v)}%"></i></div>`;
+    if (f.t === 'date') { const a = f.k === 'dob' ? ageOf(v) : ''; return `<div class="d">${esc(f.l)}: ${a !== '' ? a + ' سنة · ' : ''}<bdi>${esc(v)}</bdi></div>`; }
+    return `<div class="d">${esc(f.l)}: ${esc(v)}</div>`;
+  }).join('');
+  return { posRow, body };
+}
+function playerCard(p) {
+  const { posRow, body } = parts(p);
+  const star = String(p.id) === featured;
+  return `<article class="card pl" data-open-p="${p.id}" tabindex="0" role="button" aria-label="عرض بيانات ${esc(p.name)}">
+    <img class="av" src="${esc(p.photo || AVATAR)}" alt="${esc(p.name)}" loading="lazy">
+    <div class="info"><div class="name"><b>${esc(p.name)}</b>${posRow ? `<span class="pos">${esc(posRow.v)}</span>` : ''}</div>
+    <div class="stats">${body}</div></div>
+    ${admin() ? `<div class="act"><button class="star ${star ? 'on' : ''}" data-star="${p.id}" aria-label="لاعب الأسبوع">${ic('star')}</button><button class="star" data-edit-p="${p.id}" aria-label="تعديل">${ic('edit')}</button><button class="x" data-del-p="${p.id}" aria-label="حذف">${ic('trash')}</button></div>` : ''}
+  </article>`;
+}
+function sessionCard(s) {
+  const when = [s.date ? fmtDate(s.date) : '', s.note ? esc(s.note) : '', s.time ? fmtTime(s.time) : ''].filter(Boolean).join(' - ') || 'بدون تاريخ محدد';
+  return `<article class="card ses ${s.date && s.date < today() ? 'past' : ''}">
+    <div class="info"><h4>${esc(s.title)}</h4><p>${ic('clock')} ${when}</p>${s.location ? `<p>${ic('pin')} ${esc(s.location)}</p>` : ''}</div>
+    ${admin() ? `<div><button class="star" data-edit-s="${s.id}" aria-label="تعديل">${ic('edit')}</button><button class="x" data-del-s="${s.id}" aria-label="حذف">${ic('trash')}</button></div>` : ''}
+  </article>`;
+}
 
-    function renderPlayers(data = players) {
-      const container = document.getElementById('playersGrid');
-      container.innerHTML = '';
+function render() {
+  const posOn = S.fields.some(f => f.k === 'position' && f.on);
+  const sel = $('#pos'), cur = sel.value;
+  sel.innerHTML = '<option value="ALL">كل المراكز</option>' + S.positions.map(o => `<option>${esc(o)}</option>`).join('');
+  sel.value = [...sel.options].some(o => o.value === cur) ? cur : 'ALL'; sel.hidden = !posOn;
+  const q = $('#q').value.trim().toLowerCase(), pos = posOn ? sel.value : 'ALL';
+  const list = players.filter(p => p.name.toLowerCase().includes(q) && (pos === 'ALL' || p.position === pos));
+  $('#grid').innerHTML = list.length ? list.map(playerCard).join('') : `<p class="empty">${players.length ? 'لا يوجد لاعبون مطابقون للبحث.' : 'لا يوجد لاعبون بعد.' + (admin() ? ' اضغط «لاعب جديد» للبدء.' : '')}</p>`;
+  const sorted = [...sessions].sort((a, b) => (a.date ? 0 : 1) - (b.date ? 0 : 1) || (a.date + (a.time || '')).localeCompare(b.date + (b.time || '')));
+  $('#sessions').innerHTML = sorted.length ? sorted.map(sessionCard).join('') : `<p class="empty">لا توجد مواعيد مجدولة.${admin() ? ' اضغط «إضافة موعد».' : ''}</p>`;
+  const fp = players.find(p => String(p.id) === featured);
+  $('#week').hidden = !fp; if (fp) $('#weekName').textContent = fp.name;
+  $('#heroTxt').innerHTML = `<span>${players.length}</span> لاعبًا · <span>${sessions.length}</span> موعدًا`;
+  document.querySelectorAll('.admin').forEach(b => b.hidden = !admin());
+  if (!admin() && !$('#tab-settings').hidden) showTab('players');
+}
 
-      if (data.length === 0) {
-        container.innerHTML = `<div class="text-center py-8 text-slate-500 text-xs">لا يوجد لاعبين مطابقين للبحث</div>`;
-        return;
-      }
+function showTab(t) {
+  document.querySelectorAll('nav [data-tab]').forEach(x => x.setAttribute('aria-selected', x.dataset.tab === t));
+  ['players', 'schedule', 'settings'].forEach(n => $('#tab-' + n).hidden = n !== t);
+  if (t === 'settings') renderSettings();
+}
+document.querySelectorAll('nav [data-tab]').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
+$('#q').addEventListener('input', render); $('#pos').addEventListener('change', render);
 
-      data.forEach(p => {
-        const card = document.createElement('div');
-        card.className = "fifa-card p-3 rounded-2xl relative flex items-center justify-between";
-        card.innerHTML = `
-          <div class="flex items-center space-x-3 space-x-reverse">
-            <img src="${p.photo}" class="w-14 h-14 rounded-full border-2 border-amber-400 object-cover shadow-md">
-            <div>
-              <div class="flex items-center gap-2">
-                <h3 class="font-bold text-sm text-amber-400">${p.name}</h3>
-                <span class="badge-pos text-[9px] text-slate-950 font-extrabold px-1.5 py-0.5 rounded">${p.position}</span>
-              </div>
-              <p class="text-[11px] text-slate-400 mt-0.5"><i class="fa-solid fa-cake-candles text-amber-500/80 ml-1"></i>${p.age} سنة (${p.dob})</p>
-              <div class="flex gap-3 text-[10px] text-slate-300 mt-1.5">
-                <span>⚡ السرعة: <strong class="text-emerald-400">${p.pace || 75}</strong></span>
-                <span>⚽ المهارة: <strong class="text-emerald-400">${p.skill || 80}</strong></span>
-              </div>
-            </div>
-          </div>
-          ${isAdmin ? `
-            <button onclick="deletePlayer(${p.id})" class="text-red-400 hover:text-red-300 p-2">
-              <i class="fa-solid fa-trash-can text-sm"></i>
-            </button>
-          ` : ''}
-        `;
-        container.appendChild(card);
-      });
-    }
+/* الدخول والخروج */
+function setRole(r) {
+  role = r; sessionStorage.setItem('academy_role', r);
+  $('#splash').hidden = !!r; showTab('players'); render();
+}
+$('#goVisitor').addEventListener('click', () => setRole('visitor'));
+$('#goAdmin').addEventListener('click', () => { $('#fPin').reset(); $('#pinErr').hidden = true; $('#dPin').showModal(); });
+$('#fPin').addEventListener('submit', e => {
+  if ($('#pinIn').value === S.pin) { setRole('admin'); return; }
+  e.preventDefault(); $('#pinErr').hidden = false; $('#pinIn').select();
+});
+$('#role').addEventListener('click', () => setRole(''));
+document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => b.closest('dialog').close()));
 
-    function renderSessions() {
-      const container = document.getElementById('sessionsList');
-      container.innerHTML = '';
-      sessions.forEach(s => {
-        const card = document.createElement('div');
-        card.className = "bg-slate-800/60 border border-slate-700/60 p-3 rounded-xl flex justify-between items-center";
-        card.innerHTML = `
-          <div>
-            <h4 class="font-bold text-xs text-emerald-400">${s.title}</h4>
-            <p class="text-[11px] text-slate-300 mt-1"><i class="fa-regular fa-clock ml-1 text-slate-400"></i>${s.date} - ${s.time}</p>
-            <p class="text-[10px] text-slate-400"><i class="fa-solid fa-location-dot ml-1 text-slate-400"></i>${s.location}</p>
-          </div>
-          ${isAdmin ? `<button onclick="deleteSession(${s.id})" class="text-red-400 text-xs p-2"><i class="fa-solid fa-trash-can"></i></button>` : ''}
-        `;
-        container.appendChild(card);
-      });
-    }
+/* اللاعبون */
+function openPlayer(id) {
+  const p = players.find(x => String(x.id) === String(id)) || {};
+  photoTmp = p.photo || ''; $('#fP').dataset.id = id || '';
+  $('#dPT').textContent = id ? 'تعديل بيانات اللاعب' : 'إضافة لاعب جديد';
+  $('#pFile').value = ''; $('#pPrev').src = photoTmp || AVATAR;
+  $('#pFields').innerHTML = `<label>الاسم الكامل<input name="name" required maxlength="60" value="${esc(p.name)}"></label>` +
+    S.fields.filter(f => f.on).map(f => `<label>${esc(f.l)}` + (f.t === 'select'
+      ? `<select name="${f.k}"><option value="">—</option>${S.positions.map(o => `<option ${p[f.k] === o ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select>`
+      : `<input name="${f.k}" type="${f.t}" value="${esc(p[f.k])}" ${f.t === 'date' ? `max="${today()}"` : f.t === 'number' ? 'step="any"' : 'maxlength="80"'}>`) + '</label>').join('');
+  $('#dP').showModal();
+}
+$('#addP').addEventListener('click', () => openPlayer());
+$('#pFile').addEventListener('change', e => readJpg(e.target.files[0], 700, .8).then(d => { photoTmp = d; $('#pPrev').src = d; }).catch(err => { e.target.value = ''; imgErr(err); }));
+$('#fP').addEventListener('submit', e => {
+  e.preventDefault();
+  const fd = new FormData(e.target), id = e.target.dataset.id;
+  const p = id ? players.find(x => String(x.id) === id) : { id: Date.now() };
+  p.name = String(fd.get('name')).trim(); p.photo = photoTmp;
+  S.fields.filter(f => f.on).forEach(f => p[f.k] = String(fd.get(f.k) ?? '').trim());
+  if (!id) players.push(p);
+  if (persist()) { render(); $('#dP').close(); }
+});
 
-    function handleRoleToggle() {
-      if (!isAdmin) {
-        const pin = prompt("أدخل رمز المرور للأدمن (الرمز الافتراضي: 1234):");
-        if (pin === "1234") {
-          isAdmin = true;
-          updateRoleUI();
-        } else if (pin !== null) {
-          alert("رمز المرور خاطئ!");
-        }
-      } else {
-        isAdmin = false;
-        updateRoleUI();
-      }
-    }
+/* المواعيد */
+function openSession(id) {
+  const s = sessions.find(x => String(x.id) === String(id)) || {};
+  $('#fS').dataset.id = id || ''; $('#dST').textContent = id ? 'تعديل الموعد' : 'إضافة موعد جديد';
+  $('#sTitle').value = s.title || ''; $('#sDate').value = s.date || ''; $('#sTime').value = /^\d{2}:\d{2}$/.test(s.time || '') ? s.time : '';
+  $('#sNote').value = s.note || ''; $('#sLoc').value = s.location || ''; $('#dS').showModal();
+}
+$('#addS').addEventListener('click', () => openSession());
+$('#fS').addEventListener('submit', e => {
+  e.preventDefault();
+  const id = e.target.dataset.id, s = id ? sessions.find(x => String(x.id) === id) : { id: Date.now() };
+  Object.assign(s, { title: $('#sTitle').value.trim(), date: $('#sDate').value, time: $('#sTime').value, note: $('#sNote').value.trim(), location: $('#sLoc').value.trim() });
+  if (!id) sessions.push(s);
+  if (persist()) { render(); $('#dS').close(); }
+});
 
-    function updateRoleUI() {
-      const label = document.getElementById('roleLabel');
-      const btn = document.getElementById('roleToggleBtn');
-      const addPlayerBtn = document.getElementById('addPlayerBtn');
-      const addSessionBtn = document.getElementById('addSessionBtn');
+/* نقرات القوائم */
+document.addEventListener('click', e => {
+  const g = a => e.target.closest(`[${a}]`);
+  let el;
+  if ((el = g('data-star'))) { featured = featured === el.dataset.star ? '' : el.dataset.star; persist(); render(); }
+  else if ((el = g('data-edit-p'))) openPlayer(el.dataset.editP);
+  else if ((el = g('data-edit-s'))) openSession(el.dataset.editS);
+  else if ((el = g('data-del-p')) && confirm('هل أنت متأكد من حذف هذا اللاعب؟')) {
+    players = players.filter(p => String(p.id) !== el.dataset.delP); if (featured === el.dataset.delP) featured = ''; persist(); render();
+  } else if ((el = g('data-del-s')) && confirm('هل أنت متأكد من حذف هذا الموعد؟')) {
+    sessions = sessions.filter(s => String(s.id) !== el.dataset.delS); persist(); render();
+  } else if ((el = g('data-dot'))) goSlide(+el.dataset.dot);
+  else if (!e.target.closest('button') && (el = g('data-open-p'))) openDetail(el.dataset.openP);
+});
+document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches?.('[data-open-p]')) openDetail(e.target.dataset.openP); });
+document.addEventListener('error', e => { if (e.target.classList?.contains('av') && e.target.src !== AVATAR) e.target.src = AVATAR; }, true);
 
-      if (isAdmin) {
-        label.innerText = "وضع الأدمن";
-        btn.className = "bg-amber-500 text-slate-950 px-3 py-1.5 rounded-full font-bold text-xs shadow-lg shadow-amber-500/20 flex items-center gap-1.5";
-        addPlayerBtn.classList.remove('hidden');
-        addSessionBtn.classList.remove('hidden');
-      } else {
-        label.innerText = "وضع المشاهد";
-        btn.className = "bg-slate-800 text-amber-400 px-3 py-1.5 rounded-full border border-amber-500/30 font-semibold text-xs flex items-center gap-1.5";
-        addPlayerBtn.classList.add('hidden');
-        addSessionBtn.classList.add('hidden');
-      }
-      renderPlayers();
-      renderSessions();
-    }
+/* الإعدادات */
+function renderSettings() {
+  const fRows = S.fields.map((f, i) => `<div class="row">
+    <input type="checkbox" data-fi="${i}" data-fp="on" ${f.on ? 'checked' : ''} aria-label="إظهار ${esc(f.l)}">
+    <input type="text" data-fi="${i}" data-fp="l" value="${esc(f.l)}" maxlength="30" aria-label="اسم الحقل">
+    <small>${{ date: 'تاريخ', number: 'رقم', text: 'نص', select: 'قائمة المراكز', tel: 'هاتف' }[f.t]}</small>
+    ${String(f.k).startsWith('f') ? `<button class="x" data-fdel="${i}" aria-label="حذف الحقل">${ic('trash')}</button>` : ''}</div>`).join('');
+  const iRows = Object.keys(IMG_LABELS).map(k => `<div class="row"><img class="thumb" src="${esc(S.img[k])}" alt="">
+    <label class="up">${IMG_LABELS[k]} (JPG)<input type="file" accept="image/jpeg,.jpg,.jpeg" data-img="${k}"></label>
+    <button class="btn ghost" data-imgreset="${k}" type="button">افتراضي</button></div>`).join('');
+  const u = S.ui, sh = S.show, o = (v, c, t) => `<option value="${v}" ${c ? 'selected' : ''}>${t}</option>`;
+  const sRows = S.slides.map((s, i) => `<div class="row"><img class="thumb" src="${esc(s.src)}" alt="">
+    <input data-sl="${i}" value="${esc(s.cap)}" placeholder="تعليق (اختياري)" maxlength="60" aria-label="تعليق الشريحة">
+    <button class="star" data-slup="${i}" type="button" aria-label="تقديم">↑</button>
+    <label class="btn ghost" style="margin:0;padding:6px 9px" aria-label="استبدال الصورة">${ic('edit')}<input type="file" accept="image/jpeg,.jpg,.jpeg" data-slimg="${i}" hidden></label>
+    <button class="x" data-sldel="${i}" type="button" aria-label="حذف الشريحة">${ic('trash')}</button></div>`).join('');
+  $('#setPanel').innerHTML = `
+  <div class="set"><h3>عام</h3>
+    <label>اسم الأكاديمية<input data-s="name" value="${esc(S.name)}" maxlength="80"></label>
+    <label>العبارة تحت الاسم<input data-s="tag" value="${esc(S.tag)}" maxlength="60"></label>
+    <label>كلمة مرور الأدمن (4 أرقام)<input data-s="pin" value="${esc(S.pin)}" inputmode="numeric" maxlength="4" pattern="\\d{4}"></label></div>
+  <div class="set"><h3>الصور</h3>${iRows}</div>
+  <div class="set"><h3>عرض الشرائح (الصفحة الرئيسية)</h3>
+    <div class="row"><input type="checkbox" data-sh="on" ${sh.on ? 'checked' : ''}><span class="up">تفعيل عرض الشرائح</span></div>
+    <div class="two"><label>الارتفاع: ${sh.h}px<input type="range" min="100" max="400" step="10" value="${sh.h}" data-sh="h"></label>
+    <label>مدة الشريحة (ثانية)<input type="number" min="2" max="15" value="${sh.sec}" data-sh="sec"></label></div>
+    <label>طريقة عرض الصورة<select data-sh="fit">${o('cover', sh.fit === 'cover', 'ملء الإطار')}${o('contain', sh.fit === 'contain', 'الصورة كاملة')}</select></label>
+    ${sRows}
+    <label class="up">إضافة صور (JPG، حتى 12 شريحة)<input type="file" multiple accept="image/jpeg,.jpg,.jpeg" data-sladd></label></div>
+  <div class="set"><h3>الإطارات والمظهر</h3>
+    <label>استدارة الإطارات: ${u.radius}px<input type="range" min="0" max="28" value="${u.radius}" data-ui="radius"></label>
+    <div class="two"><label>لون الإطارات<input type="color" value="${esc(u.frame)}" data-ui="frame"></label><label>لون البطاقات<input type="color" value="${esc(u.card)}" data-ui="card"></label></div>
+    <label>لون التمييز (الأزرار)<input type="color" value="${esc(u.accent)}" data-ui="accent"></label>
+    <label>شكل إطار صورة اللاعب<select data-ui="shape">${o('circle', u.shape === 'circle', 'دائري')}${o('round', u.shape === 'round', 'مستدير')}${o('square', u.shape === 'square', 'مربع')}</select></label>
+    <div class="two"><label>سماكة إطار الصورة: ${u.border}px<input type="range" min="0" max="6" value="${u.border}" data-ui="border"></label>
+    <label>حجم صورة اللاعب: ${u.size}px<input type="range" min="64" max="140" step="4" value="${u.size}" data-ui="size"></label></div>
+    <button class="btn ghost" data-uireset type="button">استعادة المظهر الافتراضي</button></div>
+  <div class="set"><h3>المراكز</h3><label>افصل بين المراكز بفاصلة<input data-s="positions" value="${esc(S.positions.join('، '))}"></label></div>
+  <div class="set"><h3>حقول بيانات اللاعب</h3><p class="up">أخفِ أي حقل غير ضروري، أو أضف حقولًا جديدة.</p>${fRows}
+    <div class="row"><input type="checkbox" data-ui="phone" ${u.phone ? 'checked' : ''}><span class="up">إظهار رقم التواصل للزائر (يظهر للأدمن دائمًا)</span></div>
+    <div class="row"><input id="nfL" placeholder="اسم حقل جديد" maxlength="30"><select id="nfT"><option value="text">نص</option><option value="number">رقم</option><option value="date">تاريخ</option></select>
+    <button class="btn" data-fadd type="button">${ic('plus')}</button></div></div>
+  <div class="set"><h3>التطبيق</h3><button class="btn ghost" data-install type="button" style="justify-content:center;padding:9px">تثبيت التطبيق على الشاشة الرئيسية</button></div>
+  <div class="set"><h3>البيانات</h3><div class="acts"><button class="btn ghost" data-export type="button">تصدير نسخة</button>
+    <label class="btn ghost" style="margin:0">استيراد<input type="file" accept="application/json,.json" data-import hidden></label></div>
+    <button class="btn danger" style="justify-content:center;padding:9px" data-reset type="button">إعادة ضبط التطبيق</button></div>`;
+}
+$('#setPanel').addEventListener('change', async e => {
+  const t = e.target, d = t.dataset;
+  if (!t.closest('[data-s],[data-img],[data-fi],[data-import],[data-ui],[data-sh],[data-sl],[data-slimg],[data-sladd]')) return;
+  if (d.import !== undefined) {
+    try {
+      const o = JSON.parse(await t.files[0].text());
+      if (!Array.isArray(o.players) || !Array.isArray(o.sessions) || !o.settings) throw 0;
+      localStorage.setItem(K.p, JSON.stringify(o.players)); localStorage.setItem(K.s, JSON.stringify(o.sessions));
+      localStorage.setItem(K.c, JSON.stringify(o.settings)); localStorage.setItem(K.f, JSON.stringify(o.featured || ''));
+      location.reload();
+    } catch { alert('ملف النسخة غير صالح.'); }
+    return;
+  }
+  if (d.s === 'pin') { if (!/^\d{4}$/.test(t.value)) { alert('كلمة المرور يجب أن تتكون من 4 أرقام.'); t.value = S.pin; return; } S.pin = t.value; }
+  else if (d.s === 'positions') S.positions = t.value.split(/[,،\n]/).map(x => x.trim()).filter(Boolean);
+  else if (d.s) S[d.s] = t.value.trim() || D[d.s];
+  else if (d.img) { try { S.img[d.img] = await readJpg(t.files[0], d.img === 'logo' ? 256 : 900, .75); } catch (err) { t.value = ''; imgErr(err); return; } }
+  else if (d.ui) S.ui[d.ui] = t.type === 'checkbox' ? t.checked : (t.type === 'range' || t.type === 'number') ? Number(t.value) : t.value;
+  else if (d.sh) S.show[d.sh] = t.type === 'checkbox' ? t.checked : (t.type === 'range' || t.type === 'number') ? Number(t.value) || 4 : t.value;
+  else if (d.sl !== undefined) S.slides[d.sl].cap = t.value.trim();
+  else if (d.slimg !== undefined) { try { S.slides[d.slimg].src = await readJpg(t.files[0], 900, .75); } catch (err) { t.value = ''; imgErr(err); return; } }
+  else if (d.sladd !== undefined) {
+    try { for (const f of [...t.files].slice(0, 12 - S.slides.length)) S.slides.push({ id: Date.now() + Math.random(), src: await readJpg(f, 900, .75), cap: '' }); }
+    catch (err) { imgErr(err); }
+    t.value = '';
+  }
+  else if (d.fi !== undefined) { const f = S.fields[d.fi]; if (d.fp === 'on') f.on = t.checked; else f.l = t.value.trim() || f.l; }
+  persist(); apply(); render(); renderSettings();
+});
+$('#setPanel').addEventListener('click', e => {
+  const d = e.target.closest('button')?.dataset; if (!d) return;
+  if (d.imgreset) S.img[d.imgreset] = D.img[d.imgreset];
+  else if (d.install !== undefined) { install(); return; }
+  else if (d.uireset !== undefined) S.ui = { ...D.ui };
+  else if (d.sldel !== undefined) { if (!confirm('حذف هذه الشريحة؟')) return; S.slides.splice(d.sldel, 1); }
+  else if (d.slup !== undefined) { const i = +d.slup; if (i < 1) return; [S.slides[i - 1], S.slides[i]] = [S.slides[i], S.slides[i - 1]]; }
+  else if (d.fdel !== undefined) { if (!confirm('حذف هذا الحقل من نموذج اللاعب؟')) return; S.fields.splice(d.fdel, 1); }
+  else if (d.fadd !== undefined) { const l = $('#nfL').value.trim(); if (!l) { alert('اكتب اسم الحقل أولًا.'); return; } S.fields.push({ k: 'f' + Date.now(), l, t: $('#nfT').value, on: true }); }
+  else if (d.export !== undefined) {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([JSON.stringify({ settings: S, players, sessions, featured })], { type: 'application/json' }));
+    a.download = 'academy-backup-' + today() + '.json'; a.click(); return;
+  } else if (d.reset !== undefined) { if (confirm('سيتم حذف كل البيانات والإعدادات. هل أنت متأكد؟')) { Object.values(K).forEach(k => localStorage.removeItem(k)); sessionStorage.clear(); location.reload(); } return; }
+  else return;
+  persist(); apply(); render(); renderSettings();
+});
 
-    function filterPlayers() {
-      const q = document.getElementById('searchInput').value.toLowerCase();
-      const pos = document.getElementById('positionFilter').value;
-      const filtered = players.filter(p => {
-        const matchName = p.name.toLowerCase().includes(q);
-        const matchPos = pos === 'ALL' || p.position === pos;
-        return matchName && matchPos;
-      });
-      renderPlayers(filtered);
-    }
+/* التثبيت على الشاشة الرئيسية */
+let dip;
+addEventListener('beforeinstallprompt', e => { e.preventDefault(); dip = e; });
+async function install() { if (dip) { dip.prompt(); await dip.userChoice; dip = null; } else $('#dI').showModal(); }
+$('#instBtn').addEventListener('click', install);
+if (matchMedia('(display-mode: standalone)').matches || navigator.standalone) $('#instBtn').hidden = true;
+if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(() => {});
 
-    function switchTab(tab) {
-      document.getElementById('tab-players').classList.toggle('hidden', tab !== 'players');
-      document.getElementById('tab-schedule').classList.toggle('hidden', tab !== 'schedule');
-      document.getElementById('nav-players').className = tab === 'players' ? 'flex flex-col items-center text-emerald-400 font-semibold text-xs' : 'flex flex-col items-center text-slate-400 hover:text-slate-200 font-semibold text-xs';
-      document.getElementById('nav-schedule').className = tab === 'schedule' ? 'flex flex-col items-center text-emerald-400 font-semibold text-xs' : 'flex flex-col items-center text-slate-400 hover:text-slate-200 font-semibold text-xs';
-    }
-
-    function openModal() { document.getElementById('playerModal').classList.remove('hidden'); document.getElementById('playerModal').classList.add('flex'); }
-    function closeModal() { document.getElementById('playerModal').classList.add('hidden'); document.getElementById('playerModal').classList.remove('flex'); }
-
-    function calculateAge() {
-      const dob = document.getElementById('pDob').value;
-      if (dob) {
-        const birthDate = new Date(dob);
-        const diff = Date.now() - birthDate.getTime();
-        const ageDate = new Date(diff);
-        document.getElementById('pAge').value = Math.abs(ageDate.getUTCFullYear() - 1970);
-      }
-    }
-
-    function savePlayer(e) {
-      e.preventDefault();
-      const newPlayer = {
-        id: Date.now(),
-        name: document.getElementById('pName').value,
-        dob: document.getElementById('pDob').value,
-        age: document.getElementById('pAge').value,
-        position: document.getElementById('pPosition').value,
-        photo: document.getElementById('pPhoto').value || 'https://images.unsplash.com/photo-1543351611-c82394862a50?w=150&auto=format&fit=crop',
-        pace: document.getElementById('pPace').value,
-        skill: document.getElementById('pSkill').value
-      };
-      players.push(newPlayer);
-      saveData();
-      renderPlayers();
-      closeModal();
-      document.getElementById('playerForm').reset();
-    }
-
-    function deletePlayer(id) {
-      if (confirm("هل أنت تأكد من حذف هذا اللاعب؟")) {
-        players = players.filter(p => p.id !== id);
-        saveData();
-        renderPlayers();
-      }
-    }
-
-    function deleteSession(id) {
-      if (confirm("هل أنت تأكد من حذف هذا الموعد؟")) {
-        sessions = sessions.filter(s => s.id !== id);
-        saveData();
-        renderSessions();
-      }
-    }
-
-    // التشغيل الأولي
-    renderPlayers();
-    renderSessions();
-  </script>
+apply(); setRole(role);
+</script>
 </body>
 </html>
