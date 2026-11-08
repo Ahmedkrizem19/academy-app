@@ -4,80 +4,114 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>أكاديمية الأبطال لكرة القدم</title>
-  <!-- Tailwind CSS للواجهات الجذابة -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FontAwesome للأيقونات -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    body { font-family: system-ui, -apple-system, sans-serif; background-color: #f3f4f6; }
+    body { font-family: system-ui, -apple-system, sans-serif; background-color: #0f172a; color: #f8fafc; }
     .fifa-card {
       background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
       border: 2px solid #eab308;
+      box-shadow: 0 10px 25px -5px rgba(234, 179, 8, 0.15);
+    }
+    .badge-pos {
+      background: linear-gradient(45deg, #eab308, #ca8a04);
     }
   </style>
 </head>
-<body class="pb-20">
+<body class="pb-24">
 
   <!-- الهيدر العلوي -->
-  <header class="bg-emerald-600 text-white p-4 sticky top-0 z-50 shadow-md flex justify-between items-center">
+  <header class="bg-slate-900 border-b border-slate-800 p-4 sticky top-0 z-50 shadow-lg flex justify-between items-center max-w-md mx-auto">
     <div class="flex items-center space-x-2 space-x-reverse">
-      <i class="fa-solid fa-futbol text-2xl text-yellow-300"></i>
-      <h1 class="font-bold text-lg">أكاديمية الأبطال</h1>
+      <div class="w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-500 flex items-center justify-center">
+        <i class="fa-solid fa-futbol text-emerald-400 text-xl"></i>
+      </div>
+      <div>
+        <h1 class="font-bold text-base text-white leading-tight">أكاديمية الأبطال</h1>
+        <p class="text-[10px] text-emerald-400">رعاية وتطوير المواهب</p>
+      </div>
     </div>
-    <!-- وضع الدخول -->
-    <button id="roleToggleBtn" onclick="toggleRole()" class="bg-emerald-800 hover:bg-emerald-900 text-xs text-yellow-300 px-3 py-1.5 rounded-full border border-yellow-400 font-semibold transition">
-      <i class="fa-solid fa-user-shield ml-1"></i> وضع المشاهد
+    
+    <!-- زر التحكم بالدور -->
+    <button id="roleToggleBtn" onclick="handleRoleToggle()" class="bg-slate-800 hover:bg-slate-700 text-xs text-amber-400 px-3 py-1.5 rounded-full border border-amber-500/30 font-semibold transition flex items-center gap-1.5">
+      <i class="fa-solid fa-user-shield"></i> <span id="roleLabel">وضع المشاهد</span>
     </button>
   </header>
 
-  <!-- محتوى الصفحة الرئيسية -->
-  <main class="p-4 max-w-md mx-auto">
+  <!-- محتوى التطبيق -->
+  <main class="p-4 max-w-md mx-auto space-y-4">
 
-    <!-- شريط التنبيهات -->
-    <div class="bg-emerald-100 border-r-4 border-emerald-500 text-emerald-800 p-3 rounded shadow-sm text-sm mb-4 flex items-center justify-between">
-      <span>⚽ التمرين القادم: <strong>الغد - الساعة 4:00 مساءً</strong></span>
-    </div>
+    <!-- شاشة قائمة اللاعبين -->
+    <section id="tab-players" class="space-y-4">
+      <!-- شريط البحث والتصفية -->
+      <div class="flex gap-2">
+        <div class="relative flex-1">
+          <i class="fa-solid fa-magnifying-glass absolute right-3 top-3 text-slate-400 text-xs"></i>
+          <input type="text" id="searchInput" oninput="filterPlayers()" placeholder="ابحث عن لاعب..." class="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 pr-8 pl-3 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-emerald-500">
+        </div>
+        <select id="positionFilter" onchange="filterPlayers()" class="bg-slate-800 border border-slate-700 rounded-xl px-2 text-xs text-slate-300 focus:outline-none focus:border-emerald-500">
+          <option value="ALL">كل المراكز</option>
+          <option value="مهاجم">مهاجم</option>
+          <option value="خط وسط">خط وسط</option>
+          <option value="مدافع">مدافع</option>
+          <option value="حارس مرمى">حارس مرمى</option>
+        </select>
+      </div>
 
-    <!-- ترويسة القسم -->
-    <div class="flex justify-between items-center mb-3">
-      <h2 class="font-bold text-gray-800 text-base" id="sectionTitle">قائمة نجوم الأكاديمية</h2>
-      <button id="addPlayerBtn" onclick="openModal()" class="hidden bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1.5 rounded-lg shadow font-semibold">
-        <i class="fa-solid fa-plus ml-1"></i> إضافة لاعب
-      </button>
-    </div>
+      <!-- ترويسة القسم الإدارية -->
+      <div class="flex justify-between items-center">
+        <h2 class="font-bold text-sm text-slate-200 flex items-center gap-2">
+          <i class="fa-solid fa-users text-emerald-400"></i> قائمة نجوم الأكاديمية
+        </h2>
+        <button id="addPlayerBtn" onclick="openModal()" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3 py-1.5 rounded-lg font-semibold shadow-lg shadow-emerald-600/20 transition flex items-center gap-1">
+          <i class="fa-solid fa-plus"></i> لاعب جديد
+        </button>
+      </div>
 
-    <!-- شبكة عرض بطاقات اللاعبين -->
-    <div id="playersGrid" class="grid grid-cols-1 gap-4">
-      <!-- يتم توليد البطاقات ديناميكياً بواسطة JavaScript -->
-    </div>
+      <!-- شبكة عرض بطاقات اللاعبين -->
+      <div id="playersGrid" class="space-y-3"></div>
+    </section>
+
+    <!-- شاشة مواعيد التمارين -->
+    <section id="tab-schedule" class="hidden space-y-4">
+      <div class="flex justify-between items-center">
+        <h2 class="font-bold text-sm text-slate-200 flex items-center gap-2">
+          <i class="fa-solid fa-calendar-days text-emerald-400"></i> جدول التمارين والمباريات
+        </h2>
+        <button id="addSessionBtn" onclick="openSessionModal()" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3 py-1.5 rounded-lg font-semibold shadow-lg shadow-emerald-600/20 transition flex items-center gap-1">
+          <i class="fa-solid fa-plus"></i> إضافة موعد
+        </button>
+      </div>
+      <div id="sessionsList" class="space-y-3"></div>
+    </section>
 
   </main>
 
-  <!-- نافذة إضافة/تعديل لاعب (الأدمن فقط) -->
-  <div id="playerModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-2xl w-full max-w-md p-5 shadow-xl space-y-4">
-      <div class="flex justify-between items-center border-b pb-2">
-        <h3 class="font-bold text-gray-800">إضافة لاعب جديد</h3>
-        <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+  <!-- نافذة إضافة لاعب (الأدمن) -->
+  <div id="playerModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-5 shadow-2xl space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+        <h3 class="font-bold text-sm text-amber-400">إضافة لاعب جديد</h3>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
       <form id="playerForm" onsubmit="savePlayer(event)" class="space-y-3">
         <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-1">اسم اللاعب</label>
-          <input type="text" id="pName" required class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+          <label class="block text-xs text-slate-400 mb-1">اسم اللاعب الكامل</label>
+          <input type="text" id="pName" required class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-xs text-white focus:border-emerald-500 outline-none">
         </div>
         <div class="grid grid-cols-2 gap-2">
           <div>
-            <label class="block text-xs font-semibold text-gray-600 mb-1">تاريخ الميلاد</label>
-            <input type="date" id="pDob" required onchange="calculateAge()" class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+            <label class="block text-xs text-slate-400 mb-1">تاريخ الميلاد</label>
+            <input type="date" id="pDob" required onchange="calculateAge()" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-xs text-white focus:border-emerald-500 outline-none">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-gray-600 mb-1">العمر</label>
-            <input type="number" id="pAge" readonly class="w-full bg-gray-100 border rounded-lg p-2 text-sm text-gray-600 outline-none">
+            <label class="block text-xs text-slate-400 mb-1">العمر</label>
+            <input type="number" id="pAge" readonly class="w-full bg-slate-800/50 border border-slate-700 rounded-lg p-2 text-xs text-slate-400 outline-none">
           </div>
         </div>
         <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-1">المركز المفضل</label>
-          <select id="pPosition" class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+          <label class="block text-xs text-slate-400 mb-1">المركز المفضل</label>
+          <select id="pPosition" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-xs text-white focus:border-emerald-500 outline-none">
             <option value="مهاجم">مهاجم (FW)</option>
             <option value="خط وسط">خط وسط (MF)</option>
             <option value="مدافع">مدافع (DF)</option>
@@ -85,57 +119,89 @@
           </select>
         </div>
         <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-1">رابط صورة اللاعب (اختياري)</label>
-          <input type="url" id="pPhoto" placeholder="https://..." class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+          <label class="block text-xs text-slate-400 mb-1">رابط صورة اللاعب (اختياري)</label>
+          <input type="url" id="pPhoto" placeholder="https://..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-xs text-white focus:border-emerald-500 outline-none">
         </div>
-        <button type="submit" class="w-full bg-emerald-600 text-white font-bold py-2 rounded-lg hover:bg-emerald-700 transition">حفظ البيانات</button>
+        <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800">
+          <div>
+            <label class="block text-[10px] text-slate-400 mb-1">السرعة (1-99)</label>
+            <input type="number" id="pPace" min="1" max="99" value="75" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-1.5 text-xs text-white text-center">
+          </div>
+          <div>
+            <label class="block text-[10px] text-slate-400 mb-1">التسديد/التمرير (1-99)</label>
+            <input type="number" id="pSkill" min="1" max="99" value="80" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-1.5 text-xs text-white text-center">
+          </div>
+        </div>
+        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-xl transition text-xs">حفظ بيانات اللاعب</button>
       </form>
     </div>
   </div>
 
   <!-- شريط التنقل السفلي -->
-  <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around py-2 max-w-md mx-auto z-40">
-    <button class="flex flex-col items-center text-emerald-600 font-semibold text-xs">
+  <nav class="fixed bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-md border-t border-slate-800 flex justify-around py-3 max-w-md mx-auto z-40">
+    <button id="nav-players" onclick="switchTab('players')" class="flex flex-col items-center text-emerald-400 font-semibold text-xs transition">
       <i class="fa-solid fa-users text-lg"></i>
-      <span>اللاعبون</span>
+      <span class="text-[10px] mt-1">اللاعبون</span>
     </button>
-    <button class="flex flex-col items-center text-gray-400 font-semibold text-xs hover:text-emerald-600">
+    <button id="nav-schedule" onclick="switchTab('schedule')" class="flex flex-col items-center text-slate-400 hover:text-slate-200 font-semibold text-xs transition">
       <i class="fa-solid fa-calendar-days text-lg"></i>
-      <span>التمارين</span>
-    </button>
-    <button class="flex flex-col items-center text-gray-400 font-semibold text-xs hover:text-emerald-600">
-      <i class="fa-solid fa-trophy text-lg"></i>
-      <span>النجوم</span>
+      <span class="text-[10px] mt-1">التمارين</span>
     </button>
   </nav>
 
-  <!-- الكود البرمجي التفاعلي -->
   <script>
     let isAdmin = false;
-    let players = [
-      { id: 1, name: "أحمد محمد", dob: "2014-05-12", age: 12, position: "مهاجم", photo: "https://images.unsplash.com/photo-1543351611-c82394862a50?w=150&auto=format&fit=crop" },
-      { id: 2, name: "عمر خالد", dob: "2015-08-20", age: 11, position: "خط وسط", photo: "https://images.unsplash.com/photo-1508215141170-ee24490333d4?w=150&auto=format&fit=crop" }
+
+    // البيانات الافتراضية للتجربة الأولية
+    const defaultPlayers = [
+      { id: 1, name: "أحمد محمد", dob: "2014-05-12", age: 12, position: "مهاجم", photo: "https://images.unsplash.com/photo-1543351611-c82394862a50?w=150&auto=format&fit=crop", pace: 85, skill: 82 },
+      { id: 2, name: "عمر خالد", dob: "2015-08-20", age: 11, position: "خط وسط", photo: "https://images.unsplash.com/photo-1508215141170-ee24490333d4?w=150&auto=format&fit=crop", pace: 78, skill: 88 }
     ];
 
-    function renderPlayers() {
+    const defaultSessions = [
+      { id: 1, title: "تمرين اللياقة والتكنيك", date: "2026-11-10", time: "04:00 مساءً", location: "الملعب الرئيسي" },
+      { id: 2, title: "مباراة وديّة حماسية", date: "2026-11-13", time: "05:00 مساءً", location: "ملعب الأكاديمية" }
+    ];
+
+    // تحميل البيانات من LocalStorage
+    let players = JSON.parse(localStorage.getItem('academy_players')) || defaultPlayers;
+    let sessions = JSON.parse(localStorage.getItem('academy_sessions')) || defaultSessions;
+
+    function saveData() {
+      localStorage.setItem('academy_players', JSON.stringify(players));
+      localStorage.setItem('academy_sessions', JSON.stringify(sessions));
+    }
+
+    function renderPlayers(data = players) {
       const container = document.getElementById('playersGrid');
       container.innerHTML = '';
 
-      players.forEach(p => {
+      if (data.length === 0) {
+        container.innerHTML = `<div class="text-center py-8 text-slate-500 text-xs">لا يوجد لاعبين مطابقين للبحث</div>`;
+        return;
+      }
+
+      data.forEach(p => {
         const card = document.createElement('div');
-        card.className = "fifa-card text-white p-4 rounded-2xl shadow-lg relative flex items-center justify-between";
+        card.className = "fifa-card p-3 rounded-2xl relative flex items-center justify-between";
         card.innerHTML = `
           <div class="flex items-center space-x-3 space-x-reverse">
-            <img src="${p.photo}" class="w-16 h-16 rounded-full border-2 border-yellow-400 object-cover shadow">
+            <img src="${p.photo}" class="w-14 h-14 rounded-full border-2 border-amber-400 object-cover shadow-md">
             <div>
-              <h3 class="font-bold text-lg text-yellow-400">${p.name}</h3>
-              <p class="text-xs text-gray-300"><i class="fa-solid fa-shirt text-emerald-400 ml-1"></i>${p.position}</p>
-              <p class="text-xs text-gray-400 mt-1"><i class="fa-solid fa-cake-candles ml-1"></i>${p.age} سنة (${p.dob})</p>
+              <div class="flex items-center gap-2">
+                <h3 class="font-bold text-sm text-amber-400">${p.name}</h3>
+                <span class="badge-pos text-[9px] text-slate-950 font-extrabold px-1.5 py-0.5 rounded">${p.position}</span>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-0.5"><i class="fa-solid fa-cake-candles text-amber-500/80 ml-1"></i>${p.age} سنة (${p.dob})</p>
+              <div class="flex gap-3 text-[10px] text-slate-300 mt-1.5">
+                <span>⚡ السرعة: <strong class="text-emerald-400">${p.pace || 75}</strong></span>
+                <span>⚽ المهارة: <strong class="text-emerald-400">${p.skill || 80}</strong></span>
+              </div>
             </div>
           </div>
           ${isAdmin ? `
             <button onclick="deletePlayer(${p.id})" class="text-red-400 hover:text-red-300 p-2">
-              <i class="fa-solid fa-trash-can text-base"></i>
+              <i class="fa-solid fa-trash-can text-sm"></i>
             </button>
           ` : ''}
         `;
@@ -143,21 +209,76 @@
       });
     }
 
-    function toggleRole() {
-      isAdmin = !isAdmin;
+    function renderSessions() {
+      const container = document.getElementById('sessionsList');
+      container.innerHTML = '';
+      sessions.forEach(s => {
+        const card = document.createElement('div');
+        card.className = "bg-slate-800/60 border border-slate-700/60 p-3 rounded-xl flex justify-between items-center";
+        card.innerHTML = `
+          <div>
+            <h4 class="font-bold text-xs text-emerald-400">${s.title}</h4>
+            <p class="text-[11px] text-slate-300 mt-1"><i class="fa-regular fa-clock ml-1 text-slate-400"></i>${s.date} - ${s.time}</p>
+            <p class="text-[10px] text-slate-400"><i class="fa-solid fa-location-dot ml-1 text-slate-400"></i>${s.location}</p>
+          </div>
+          ${isAdmin ? `<button onclick="deleteSession(${s.id})" class="text-red-400 text-xs p-2"><i class="fa-solid fa-trash-can"></i></button>` : ''}
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function handleRoleToggle() {
+      if (!isAdmin) {
+        const pin = prompt("أدخل رمز المرور للأدمن (الرمز الافتراضي: 1234):");
+        if (pin === "1234") {
+          isAdmin = true;
+          updateRoleUI();
+        } else if (pin !== null) {
+          alert("رمز المرور خاطئ!");
+        }
+      } else {
+        isAdmin = false;
+        updateRoleUI();
+      }
+    }
+
+    function updateRoleUI() {
+      const label = document.getElementById('roleLabel');
       const btn = document.getElementById('roleToggleBtn');
-      const addBtn = document.getElementById('addPlayerBtn');
+      const addPlayerBtn = document.getElementById('addPlayerBtn');
+      const addSessionBtn = document.getElementById('addSessionBtn');
 
       if (isAdmin) {
-        btn.innerHTML = `<i class="fa-solid fa-user-gear ml-1"></i> وضع الأدمن`;
-        btn.className = "bg-yellow-500 text-gray-900 px-3 py-1.5 rounded-full border border-yellow-300 font-bold text-xs shadow";
-        addBtn.classList.remove('hidden');
+        label.innerText = "وضع الأدمن";
+        btn.className = "bg-amber-500 text-slate-950 px-3 py-1.5 rounded-full font-bold text-xs shadow-lg shadow-amber-500/20 flex items-center gap-1.5";
+        addPlayerBtn.classList.remove('hidden');
+        addSessionBtn.classList.remove('hidden');
       } else {
-        btn.innerHTML = `<i class="fa-solid fa-user-shield ml-1"></i> وضع المشاهد`;
-        btn.className = "bg-emerald-800 text-yellow-300 px-3 py-1.5 rounded-full border border-yellow-400 font-semibold text-xs";
-        addBtn.classList.add('hidden');
+        label.innerText = "وضع المشاهد";
+        btn.className = "bg-slate-800 text-amber-400 px-3 py-1.5 rounded-full border border-amber-500/30 font-semibold text-xs flex items-center gap-1.5";
+        addPlayerBtn.classList.add('hidden');
+        addSessionBtn.classList.add('hidden');
       }
       renderPlayers();
+      renderSessions();
+    }
+
+    function filterPlayers() {
+      const q = document.getElementById('searchInput').value.toLowerCase();
+      const pos = document.getElementById('positionFilter').value;
+      const filtered = players.filter(p => {
+        const matchName = p.name.toLowerCase().includes(q);
+        const matchPos = pos === 'ALL' || p.position === pos;
+        return matchName && matchPos;
+      });
+      renderPlayers(filtered);
+    }
+
+    function switchTab(tab) {
+      document.getElementById('tab-players').classList.toggle('hidden', tab !== 'players');
+      document.getElementById('tab-schedule').classList.toggle('hidden', tab !== 'schedule');
+      document.getElementById('nav-players').className = tab === 'players' ? 'flex flex-col items-center text-emerald-400 font-semibold text-xs' : 'flex flex-col items-center text-slate-400 hover:text-slate-200 font-semibold text-xs';
+      document.getElementById('nav-schedule').className = tab === 'schedule' ? 'flex flex-col items-center text-emerald-400 font-semibold text-xs' : 'flex flex-col items-center text-slate-400 hover:text-slate-200 font-semibold text-xs';
     }
 
     function openModal() { document.getElementById('playerModal').classList.remove('hidden'); document.getElementById('playerModal').classList.add('flex'); }
@@ -181,21 +302,36 @@
         dob: document.getElementById('pDob').value,
         age: document.getElementById('pAge').value,
         position: document.getElementById('pPosition').value,
-        photo: document.getElementById('pPhoto').value || 'https://images.unsplash.com/photo-1543351611-c82394862a50?w=150&auto=format&fit=crop'
+        photo: document.getElementById('pPhoto').value || 'https://images.unsplash.com/photo-1543351611-c82394862a50?w=150&auto=format&fit=crop',
+        pace: document.getElementById('pPace').value,
+        skill: document.getElementById('pSkill').value
       };
       players.push(newPlayer);
+      saveData();
       renderPlayers();
       closeModal();
       document.getElementById('playerForm').reset();
     }
 
     function deletePlayer(id) {
-      players = players.filter(p => p.id !== id);
-      renderPlayers();
+      if (confirm("هل أنت تأكد من حذف هذا اللاعب؟")) {
+        players = players.filter(p => p.id !== id);
+        saveData();
+        renderPlayers();
+      }
+    }
+
+    function deleteSession(id) {
+      if (confirm("هل أنت تأكد من حذف هذا الموعد؟")) {
+        sessions = sessions.filter(s => s.id !== id);
+        saveData();
+        renderSessions();
+      }
     }
 
     // التشغيل الأولي
     renderPlayers();
+    renderSessions();
   </script>
 </body>
 </html>
