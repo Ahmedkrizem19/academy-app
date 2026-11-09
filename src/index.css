@@ -1737,7 +1737,7 @@ tbody tr:hover {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  }
+}
 
 /* =====================================================
    الهوية البصرية المطوّرة للأكاديمية
@@ -2130,4 +2130,71 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--gold); outline-
 button:focus-visible, [role="button"]:focus-visible { outline:2px solid #f0d18f; outline-offset:3px; }
 @media(prefers-reduced-motion:reduce) {
   .player-week-star, .tabs button, .player-card, .schedule-list > div, .hero-actions button { transition:none !important; }
+}
+
+/* =====================================================
+   تنسيقات الشعار والعلامة التجارية بالأكاديمية (Academy Brand)
+===================================================== */
+.academy-brand {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 14px;
+  direction: rtl;
+  width: 100%;
+}
+
+.academy-logo {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  border-radius: 50%;
+  border: 3px solid #d9ad55;
+  padding: 3px;
+  flex-shrink: 0;
+}
+
+.academy-title {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: right;
+}
+
+.academy-title h1 {
+  color: #d9ad55;
+  font-family: 'Cairo', sans-serif;
+  font-size: clamp(16px, 2.5vw, 23px);
+  font-weight: 900;
+  margin: 0;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.academy-title p {
+  color: #ffffff;
+  font-family: 'Cairo', sans-serif;
+  font-size: 14px;
+  margin: 4px 0 0;
+  font-weight: 600;
+}
+
+@media (max-width: 480px) {
+  .academy-brand {
+    gap: 9px;
+  }
+
+  .academy-logo {
+    width: 55px;
+    height: 55px;
+  }
+
+  .academy-title h1 {
+    font-size: 15px;
+  }
+
+  .academy-title p {
+    font-size: 11px;
+  }
 }
