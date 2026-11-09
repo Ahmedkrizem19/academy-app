@@ -1638,14 +1638,15 @@ export default function App() {
       {/* الهيدر */}
       <header className="topbar">
 
-        <div className="brand">
-          <img src={settings.logo} alt="شعار الأكاديمية" />
+        <div className="academy-brand">
+          <img
+            src={settings.logo || '/assets/logo.jpg'}
+            alt="شعار الأكاديمية"
+            className="academy-logo"
+          />
 
-          <div>
-            <h1>
-              أكاديمية الحملة الأردنية الهاشمية الرياضية للأيتام
-            </h1>
-
+          <div className="academy-title">
+            <h1>أكاديمية الحملة الأردنية للأيتام</h1>
             <p>رعاية المواهب وصناعة الأبطال</p>
           </div>
         </div>
@@ -3460,4 +3461,4 @@ export default function App() {
 
     </div>
   );
-      }
+}
