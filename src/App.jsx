@@ -1,3 +1,4 @@
+import './index.css';
 import React, { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { motion, AnimatePresence } from 'motion/react';
