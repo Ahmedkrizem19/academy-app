@@ -74,6 +74,7 @@ const initialSettings = {
   playerImageHeight: 210,
   playerImageWidth: 100,
   playerImageFit: 'cover',
+  playerExtraFieldNames: [],
 
   playerOfWeekName: 'نجم الأكاديمية',
   playerOfWeekDescription: 'تكريم المواهب والتميز الرياضي.',
@@ -198,6 +199,9 @@ function normalizeSettings(saved = {}) {
 
     playerImageFit:
       saved.playerImageFit === 'contain' ? 'contain' : 'cover',
+    playerExtraFieldNames: Array.isArray(saved.playerExtraFieldNames)
+      ? saved.playerExtraFieldNames.filter(name => typeof name === 'string' && name.trim()).slice(0, 30)
+      : [],
 
     theme: normalizeTheme(saved.theme),
 
@@ -283,6 +287,7 @@ export default function App() {
   const [editingNotification, setEditingNotification] = useState(null);
 
   const [extraFields, setExtraFields] = useState([]);
+  const [playerExtraFieldDraft, setPlayerExtraFieldDraft] = useState('');
 
   // نموذج اللاعب
   const [playerForm, setPlayerForm] = useState({
@@ -811,7 +816,7 @@ export default function App() {
     if (!isAdmin) return;
 
     setEditingPlayer(null);
-    setExtraFields([]);
+    setExtraFields((settings.playerExtraFieldNames || []).map(key => ({ key, value: '' })));
 
     setPlayerForm({
       name: '',
@@ -834,12 +839,11 @@ export default function App() {
 
     setEditingPlayer(player);
 
-    setExtraFields(
-      Object.entries(player.extra_data || {}).map(([key, value]) => ({
-        key,
-        value: String(value)
-      }))
-    );
+    const savedFields = Object.entries(player.extra_data || {}).map(([key, value]) => ({ key, value: String(value) }));
+    const configuredFields = (settings.playerExtraFieldNames || [])
+      .filter(key => !savedFields.some(field => field.key === key))
+      .map(key => ({ key, value: '' }));
+    setExtraFields([...savedFields, ...configuredFields]);
 
     setPlayerForm({
       name: player.name || '',
@@ -1952,6 +1956,10 @@ export default function App() {
                     <motion.article
                       key={player.id}
                       className="player-card"
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`عرض ملف اللاعب ${player.name}`}
+                      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedPlayer(player); } }}
                       initial={{ opacity: 0, y: 15 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * .03 }}
@@ -1961,10 +1969,9 @@ export default function App() {
                     >
 
                       <div
-                        className="player-image"
+                        className="player-image player-image-round"
                         style={{
-                          height: `${settings.playerImageHeight || 210}px`,
-                          width: `${settings.playerImageWidth || 100}%`,
+                          '--player-photo-size': `${settings.playerImageHeight || 210}px`,
                           maxWidth: '100%',
                           marginInline: 'auto'
                         }}
@@ -2254,7 +2261,7 @@ export default function App() {
 
               </div>
 
-              {Object.entries(selectedPlayer.extra_data || {}).map(
+              {Object.entries(selectedPlayer.extra_data || {}).filter(([key]) => !(settings.playerExtraFieldNames || []).length || settings.playerExtraFieldNames.includes(key)).map(
                 ([key, value]) => (
                   <p key={key}>
                     <strong>{key}:</strong> {String(value)}
@@ -2973,11 +2980,11 @@ export default function App() {
                 </h3>
 
                 <p>
-                  تحكم في أبعاد الصور وطريقة ظهورها داخل بطاقات اللاعبين.
+                  تحكم في حجم الإطار الدائري وطريقة ظهور الصور داخل بطاقات اللاعبين.
                 </p>
 
                 <label>
-                  ارتفاع صور اللاعبين:
+                  حجم الإطار الدائري:
                   {' '}
                   {settings.playerImageHeight || 210}px
                 </label>
@@ -2992,26 +2999,6 @@ export default function App() {
                     setSettings({
                       ...settings,
                       playerImageHeight: Number(e.target.value)
-                    })
-                  }
-                />
-
-                <label>
-                  عرض صور اللاعبين:
-                  {' '}
-                  {settings.playerImageWidth || 100}%
-                </label>
-
-                <input
-                  style={inputStyle}
-                  type="range"
-                  min="60"
-                  max="100"
-                  value={settings.playerImageWidth || 100}
-                  onChange={e =>
-                    setSettings({
-                      ...settings,
-                      playerImageWidth: Number(e.target.value)
                     })
                   }
                 />
@@ -3060,6 +3047,37 @@ export default function App() {
                   حفظ إعدادات صور اللاعبين
                 </button>
 
+              </div>
+
+              {/* إدارة حقول بيانات اللاعبين */}
+              <div style={{ ...cardStyle, marginBottom: 14 }}>
+                <h3><FileText size={19} /> إدارة حقول بيانات اللاعبين</h3>
+                <p>أضف حقولًا مخصصة تظهر عند إضافة اللاعب وتعديل بياناته. حذف الحقل من القائمة لا يحذف القيم القديمة من قاعدة البيانات.</p>
+                <div className="extra-field-row">
+                  <input
+                    style={inputStyle}
+                    value={playerExtraFieldDraft}
+                    onChange={e => setPlayerExtraFieldDraft(e.target.value)}
+                    placeholder="اسم الحقل الجديد، مثل: تاريخ الميلاد أو القدم المفضلة"
+                    aria-label="اسم حقل بيانات جديد"
+                  />
+                  <button type="button" style={primaryButton} onClick={() => {
+                    const name = playerExtraFieldDraft.trim();
+                    if (!name) return;
+                    if ((settings.playerExtraFieldNames || []).includes(name)) { alert('هذا الحقل موجود بالفعل.'); return; }
+                    setSettings(old => ({ ...old, playerExtraFieldNames: [...(old.playerExtraFieldNames || []), name] }));
+                    setPlayerExtraFieldDraft('');
+                  }}><Plus size={16} /> إضافة</button>
+                </div>
+                {(settings.playerExtraFieldNames || []).length === 0 ? (
+                  <p className="muted-text">لا توجد حقول مخصصة بعد.</p>
+                ) : (settings.playerExtraFieldNames || []).map(name => (
+                  <div className="extra-field-row" key={name}>
+                    <span>{name}</span>
+                    <button type="button" className="delete-btn" aria-label={`إزالة الحقل ${name}`} onClick={() => setSettings(old => ({ ...old, playerExtraFieldNames: (old.playerExtraFieldNames || []).filter(item => item !== name) }))}><Trash2 size={16} /> إزالة</button>
+                  </div>
+                ))}
+                <button type="button" style={{ ...goldButton, marginTop: 10 }} onClick={() => saveSettings(settings)}><Save size={16} /> حفظ حقول بيانات اللاعبين</button>
               </div>
 
               {/* إعدادات الصور العامة */}
