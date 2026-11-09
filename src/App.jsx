@@ -72,8 +72,14 @@ const initialSettings = {
   imageHeight: 360,
 
   playerImageHeight: 210,
-  playerImageWidth: 100,
+  playerImageWidth: 210,
   playerImageFit: 'cover',
+  playerImageBorderWidth: 4,
+  playerImageBorderColor: '#d9ad55',
+  playerImageObjectPosition: 'center 25%',
+  playerImageRing: true,
+  loginLogoOpacity: 14,
+  heroOverlay: 55,
   playerExtraFieldNames: [],
 
   playerOfWeekName: 'نجم الأكاديمية',
@@ -193,10 +199,15 @@ function normalizeSettings(saved = {}) {
     ),
 
     playerImageWidth: Math.min(
-      100,
-      Math.max(60, Number(saved.playerImageWidth) || 100)
+      500,
+      Math.max(120, Number(saved.playerImageWidth) || 210)
     ),
-
+    playerImageBorderWidth: Math.min(12, Math.max(0, Number(saved.playerImageBorderWidth ?? 4))),
+    playerImageBorderColor: /^#[0-9a-fA-F]{6}$/.test(saved.playerImageBorderColor || '') ? saved.playerImageBorderColor : '#d9ad55',
+    playerImageObjectPosition: ['center 15%', 'center 25%', 'center', 'center 70%'].includes(saved.playerImageObjectPosition) ? saved.playerImageObjectPosition : 'center 25%',
+    playerImageRing: saved.playerImageRing !== false,
+    loginLogoOpacity: Math.min(35, Math.max(0, Number(saved.loginLogoOpacity ?? 14))),
+    heroOverlay: Math.min(90, Math.max(10, Number(saved.heroOverlay ?? 55))),
     playerImageFit:
       saved.playerImageFit === 'contain' ? 'contain' : 'cover',
     playerExtraFieldNames: Array.isArray(saved.playerExtraFieldNames)
@@ -1328,7 +1339,10 @@ export default function App() {
     return (
       <div className="academy" dir="rtl">
 
-        <div className="welcome-screen">
+        <div className="welcome-screen" style={{
+        '--login-logo-image': `url("${settings.logo}")`,
+        '--login-logo-opacity': `${(settings.loginLogoOpacity ?? 14) / 100}`
+      }}>
           <motion.div
             initial={{ opacity: 0, y: 25 }}
             animate={{ opacity: 1, y: 0 }}
@@ -1417,7 +1431,7 @@ export default function App() {
           {showLogin && (
             <div style={modalBackdrop}>
               <motion.form
-                className="modal"
+                className="modal login-modal"
                 onSubmit={login}
                 initial={{ scale: .9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
@@ -1437,12 +1451,11 @@ export default function App() {
                   <X />
                 </button>
 
-                <Lock
-                  size={35}
-                  style={{ color: 'var(--gold)' }}
-                />
-
+                <img className="login-modal-logo" src={settings.logo} alt="شعار الأكاديمية" />
+                <div className="login-modal-kicker">بوابة الإدارة الآمنة</div>
+                <Lock size={28} style={{ color: 'var(--gold)' }} />
                 <h2>دخول الإدارة</h2>
+                <p className="login-modal-subtitle">أهلاً بعودتك — معًا نصنع المستقبل</p>
 
                 <input
                   style={inputStyle}
@@ -1704,7 +1717,7 @@ export default function App() {
               />
             )}
 
-            <div className="hero-overlay">
+            <div className="hero-overlay" style={{ background: `linear-gradient(270deg, rgba(7,14,32,${(settings.heroOverlay ?? 55) / 100}) 0%, rgba(7,14,32,${Math.max(.18, (settings.heroOverlay ?? 55) / 125)}) 58%, rgba(7,14,32,.18) 100%)` }}>
 
               <span className="hero-tag">
                 معًا نحو المستقبل
@@ -1972,13 +1985,18 @@ export default function App() {
                         className="player-image player-image-round"
                         style={{
                           '--player-photo-size': `${settings.playerImageHeight || 210}px`,
+                          '--player-photo-width': `${settings.playerImageWidth || 210}px`,
+                          '--player-photo-border': `${settings.playerImageBorderWidth ?? 4}px`,
+                          '--player-photo-border-color': settings.playerImageBorderColor || '#d9ad55',
+                          '--player-photo-ring': settings.playerImageRing === false ? '0 0 0 1px rgba(255,255,255,.12) inset' : '0 0 0 6px rgba(217,173,85,.13)',
                           maxWidth: '100%',
                           marginInline: 'auto'
                         }}
                       >
 
                         {player.photo ? (
-                          <img
+                          <motion.img
+                            layoutId={`player-photo-${player.id}`}
                             src={player.photo}
                             alt={player.name}
                             loading="lazy"
@@ -1986,7 +2004,8 @@ export default function App() {
                             style={{
                               width: '100%',
                               height: '100%',
-                              objectFit: settings.playerImageFit || 'cover'
+                              objectFit: settings.playerImageFit || 'cover',
+                              objectPosition: settings.playerImageObjectPosition || 'center 25%'
                             }}
                           />
                         ) : (
@@ -2207,12 +2226,20 @@ export default function App() {
 
       <AnimatePresence>
         {selectedPlayer && (
-          <div style={modalBackdrop}>
-
+          <motion.div
+            className="player-modal-backdrop"
+            style={modalBackdrop}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedPlayer(null)}
+          >
             <motion.div
-              initial={{ opacity: 0, y: 30, scale: .95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, scale: .95 }}
+              initial={{ opacity: 0, y: 38, scale: .94, filter: 'blur(8px)' }}
+              animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+              exit={{ opacity: 0, y: 22, scale: .97, filter: 'blur(6px)' }}
+              transition={{ type: 'spring', stiffness: 230, damping: 24 }}
+              onClick={e => e.stopPropagation()}
               className="modal player-detail-modal"
             >
 
@@ -2224,28 +2251,37 @@ export default function App() {
               </button>
 
               {selectedPlayer.photo ? (
-                <img
+                <motion.img
+                  layoutId={`player-photo-${selectedPlayer.id}`}
                   src={selectedPlayer.photo}
                   alt={selectedPlayer.name}
                   className="player-detail-image"
+                  initial={{ scale: .78, rotate: -7, filter: 'blur(5px)' }}
+                  animate={{ scale: 1, rotate: 0, filter: 'blur(0px)' }}
+                  transition={{ type: 'spring', stiffness: 170, damping: 18, delay: .06 }}
                 />
               ) : (
                 <UserCircle size={100} />
               )}
 
-              <h2 style={{ textAlign: 'center', marginTop: 18 }}>
-                {selectedPlayer.name}
-              </h2>
+              <motion.div
+                className="player-detail-copy"
+                initial="hidden" animate="visible"
+                variants={{ hidden: {}, visible: { transition: { staggerChildren: .11, delayChildren: .18 } } }}
+              >
+                <motion.h2 variants={{ hidden: { opacity: 0, y: 22, filter: 'blur(5px)' }, visible: { opacity: 1, y: 0, filter: 'blur(0px)' } }} style={{ textAlign: 'center', marginTop: 18 }}>
+                  {selectedPlayer.name}
+                </motion.h2>
 
-              <div className="player-detail-position">
-                {selectedPlayer.position || 'لاعب الأكاديمية'}
-              </div>
+                <motion.div className="player-detail-position" variants={{ hidden: { opacity: 0, y: 15 }, visible: { opacity: 1, y: 0 } }}>
+                  {selectedPlayer.position || 'لاعب الأكاديمية'}
+                </motion.div>
 
               {getPlayerAge(selectedPlayer) !== null && (
-                <p className="player-age detail-age">العمر: {getPlayerAge(selectedPlayer)} سنة</p>
+                <motion.p variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }} className="player-age detail-age">العمر: {getPlayerAge(selectedPlayer)} سنة</motion.p>
               )}
 
-              <div className="stats-grid">
+              <motion.div className="stats-grid" variants={{ hidden: { opacity: 0, y: 15 }, visible: { opacity: 1, y: 0 } }}>
 
                 <div style={cardStyle}>
                   <Trophy size={22} />
@@ -2259,15 +2295,16 @@ export default function App() {
                   <span>المهارة</span>
                 </div>
 
-              </div>
+              </motion.div>
 
               {Object.entries(selectedPlayer.extra_data || {}).filter(([key]) => !(settings.playerExtraFieldNames || []).length || settings.playerExtraFieldNames.includes(key)).map(
-                ([key, value]) => (
-                  <p key={key}>
+                ([key, value], index) => (
+                  <motion.p className="player-extra-detail" key={key} variants={{ hidden: { opacity: 0, x: 18 }, visible: { opacity: 1, x: 0 } }} initial="hidden" animate="visible" transition={{ delay: .34 + index * .07 }}>
                     <strong>{key}:</strong> {String(value)}
-                  </p>
+                  </motion.p>
                 )
               )}
+              </motion.div>
 
               <button
                 className="submit-btn"
@@ -2278,7 +2315,7 @@ export default function App() {
               </button>
 
             </motion.div>
-          </div>
+          </motion.div>
         )}
       </AnimatePresence>
 
@@ -3003,6 +3040,22 @@ export default function App() {
                   }
                 />
 
+                <label>عرض الصورة الدائرية: {settings.playerImageWidth || 210}px</label>
+                <input style={inputStyle} type="range" min="120" max="500" value={settings.playerImageWidth || 210} onChange={e => setSettings({ ...settings, playerImageWidth: Number(e.target.value) })} />
+
+                <label>سماكة الإطار: {settings.playerImageBorderWidth ?? 4}px</label>
+                <input style={inputStyle} type="range" min="0" max="12" value={settings.playerImageBorderWidth ?? 4} onChange={e => setSettings({ ...settings, playerImageBorderWidth: Number(e.target.value) })} />
+
+                <label>لون إطار الصورة</label>
+                <input style={{ ...inputStyle, height: 48, padding: 4 }} type="color" value={settings.playerImageBorderColor || '#d9ad55'} onChange={e => setSettings({ ...settings, playerImageBorderColor: e.target.value })} />
+
+                <label>موضع الصورة داخل الإطار</label>
+                <select style={inputStyle} value={settings.playerImageObjectPosition || 'center 25%'} onChange={e => setSettings({ ...settings, playerImageObjectPosition: e.target.value })}>
+                  <option value="center 15%">أعلى قليلًا</option><option value="center 25%">أعلى الوسط</option><option value="center">الوسط</option><option value="center 70%">أسفل قليلًا</option>
+                </select>
+
+                <label className="theme-checkbox"><input type="checkbox" checked={settings.playerImageRing !== false} onChange={e => setSettings({ ...settings, playerImageRing: e.target.checked })} /> إظهار الحلقة الذهبية الخارجية</label>
+
                 <label>طريقة عرض الصور</label>
 
                 <select
@@ -3029,8 +3082,11 @@ export default function App() {
                     className="player-image"
                     style={{
                       height: `${settings.playerImageHeight || 210}px`,
-                      width: `${settings.playerImageWidth || 100}%`,
+                      width: `${settings.playerImageWidth || 210}px`,
                       maxWidth: '100%',
+                      borderWidth: `${settings.playerImageBorderWidth ?? 4}px`,
+                      borderColor: settings.playerImageBorderColor || '#d9ad55',
+                      borderRadius: '50%',
                       marginInline: 'auto'
                     }}
                   >
@@ -3103,13 +3159,19 @@ export default function App() {
                   }
                 />
 
+                <label>شفافية شعار الأكاديمية في خلفية شاشة الدخول: {settings.loginLogoOpacity ?? 14}%</label>
+                <input style={inputStyle} type="range" min="0" max="35" value={settings.loginLogoOpacity ?? 14} onChange={e => setSettings({ ...settings, loginLogoOpacity: Number(e.target.value) })} />
+
+                <label>قوة التعتيم فوق صور الواجهة الرئيسية: {settings.heroOverlay ?? 55}%</label>
+                <input style={inputStyle} type="range" min="10" max="90" value={settings.heroOverlay ?? 55} onChange={e => setSettings({ ...settings, heroOverlay: Number(e.target.value) })} />
+
                 <button
                   type="button"
                   style={primaryButton}
                   onClick={() => saveSettings(settings)}
                 >
                   <Save size={16} />
-                  حفظ أحجام الصور
+                  حفظ إعدادات الصور والواجهة
                 </button>
 
               </div>

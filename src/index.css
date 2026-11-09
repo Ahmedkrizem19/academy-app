@@ -2031,3 +2031,44 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--gold); outline-
 @media (prefers-reduced-motion: reduce) {
   .players-grid .player-image-round img { transition:none !important; }
 }
+
+
+/* واجهة دخول أكثر فخامة مع شعار الأكاديمية كعلامة مائية */
+.welcome-screen { position:relative; isolation:isolate; overflow:hidden; background:radial-gradient(circle at 50% 10%,rgba(217,173,85,.16),transparent 38%),linear-gradient(145deg,#080f22,#101d38 55%,#080f20); }
+.welcome-screen::before { content:""; position:absolute; z-index:-1; inset:0; background-image:var(--login-logo-image); background-repeat:no-repeat; background-position:center; background-size:min(78vw,620px); opacity:var(--login-logo-opacity,.14); filter:grayscale(.1) saturate(.8); pointer-events:none; }
+.welcome-screen::after { content:""; position:absolute; z-index:-1; inset:0; background:radial-gradient(ellipse at center,transparent 0%,rgba(4,9,20,.68) 78%); pointer-events:none; }
+.welcome-card { position:relative; overflow:hidden; backdrop-filter:blur(18px); background:linear-gradient(145deg,rgba(25,43,75,.94),rgba(10,19,39,.93)); border:1px solid rgba(217,173,85,.32); box-shadow:0 28px 90px rgba(0,0,0,.48),inset 0 1px rgba(255,255,255,.08); }
+.welcome-card::before { content:""; position:absolute; width:260px; height:260px; border:1px solid rgba(217,173,85,.12); border-radius:50%; inset:-150px -80px auto auto; box-shadow:0 0 0 22px rgba(217,173,85,.025),0 0 0 44px rgba(217,173,85,.02); pointer-events:none; }
+.welcome-logo { width:124px; height:124px; padding:7px; border-radius:50%; background:rgba(255,255,255,.96); border:3px solid var(--gold); box-shadow:0 0 0 8px rgba(217,173,85,.12),0 15px 38px rgba(0,0,0,.28); object-fit:contain; }
+.login-modal { isolation:isolate; overflow:hidden; padding:34px 28px 28px; text-align:center; background:linear-gradient(145deg,rgba(24,42,73,.98),rgba(8,17,36,.98)) !important; border:1px solid rgba(217,173,85,.38) !important; }
+.login-modal::before { content:""; position:absolute; z-index:-1; inset:0; background-image:var(--login-logo-image); background-position:center 48%; background-repeat:no-repeat; background-size:78%; opacity:.075; filter:grayscale(1); pointer-events:none; }
+.login-modal-logo { display:block; width:88px; height:88px; margin:0 auto 10px; padding:5px; object-fit:contain; border-radius:50%; background:#fff; border:2px solid var(--gold); box-shadow:0 0 0 6px rgba(217,173,85,.12); }
+.login-modal-kicker { color:var(--gold); font-size:12px; font-weight:800; letter-spacing:.5px; margin-bottom:10px; }
+.login-modal h2 { color:#fff; margin:8px 0 4px; font-size:26px; }
+.login-modal-subtitle { color:var(--muted); font-size:13px; margin-bottom:20px; }
+.login-modal input { background:rgba(255,255,255,.96); border:1px solid rgba(217,173,85,.3) !important; }
+
+/* صور اللاعبين: دائرة قابلة للتحكم من لوحة الإعدادات */
+.players-grid .player-image-round { width:min(var(--player-photo-width,210px),68vw); height:min(var(--player-photo-size,210px),68vw); border-width:var(--player-photo-border,4px); border-color:var(--player-photo-border-color,#d9ad55); box-shadow:0 12px 30px rgba(0,0,0,.32),var(--player-photo-ring,0 0 0 6px rgba(217,173,85,.13)); cursor:zoom-in; }
+.players-grid .player-image-round img { object-position:var(--player-photo-position,center 25%); }
+.player-detail-modal { transform-origin:center; padding:28px 26px 24px; }
+.player-detail-modal .player-detail-image { will-change:transform,filter; cursor:default; }
+.player-detail-copy h2 { color:#fff; font-size:clamp(25px,5vw,36px); font-weight:900; letter-spacing:.1px; text-shadow:0 8px 25px rgba(0,0,0,.28); }
+.player-detail-position { width:max-content; max-width:100%; margin:8px auto 12px; padding:7px 20px; border:1px solid rgba(217,173,85,.36); border-radius:99px; color:#f2d18c; background:rgba(217,173,85,.09); font-weight:800; }
+.player-detail-copy .detail-age { text-align:center; margin:8px 0 16px; }
+.player-detail-copy .stats-grid { margin-top:14px; }
+.player-extra-detail { margin:10px 0; padding:11px 14px; border:1px solid rgba(217,173,85,.15); border-radius:13px; background:rgba(255,255,255,.035); color:#eaf0fa; line-height:1.8; }
+.player-extra-detail strong { color:var(--gold); margin-inline-end:5px; }
+.player-modal-backdrop { overflow-y:auto; }
+@media(max-width:520px) {
+  .welcome-screen { padding:16px; min-height:100svh; }
+  .welcome-card { padding:30px 20px; border-radius:22px; }
+  .welcome-card h1 { font-size:clamp(22px,6vw,29px); }
+  .login-modal { padding:28px 20px 22px; }
+  .players-grid .player-image-round { width:min(var(--player-photo-width,165px),62vw); height:min(var(--player-photo-size,165px),62vw); }
+  .player-detail-modal { width:min(94vw,560px); padding:24px 17px 18px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .welcome-card,.welcome-logo,.login-modal-logo,.player-detail-modal .player-detail-image { animation:none !important; transition:none !important; }
+  .player-detail-modal { scroll-behavior:auto; }
+}
