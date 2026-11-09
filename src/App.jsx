@@ -6,9 +6,9 @@ import {
   CheckCircle, XCircle, LogOut, Lock, Download, ChevronLeft, Award, Clock
 } from 'lucide-react';
 
-// إعداد اتصال Supabase بالمفاتيح الخاصة بك
+// إعداد اتصال Supabase بالمفاتيح الصحيحة والمحدثة
 const supabaseUrl = 'https://kenstwnoudkduzmpjthd.supabase.co';
-const supabaseKey = 'sb_publishable_KuWD2MzHOBPChnQ9jgTjnA_WlNYKqXA';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlbnN0d25vdWRrZHV6bXBqdGhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQxNTYwNzYsImV4cCI6MjEwOTczMjA3Nn0.Kw2kslNrSwz0IXLaBmgE8MGSF7lkrXfh3IKYsOkyeeU';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function App() {
@@ -49,9 +49,11 @@ export default function App() {
 
     if (error) {
       console.error('خطأ في إضافة اللاعب:', error);
+      alert('حدث خطأ أثناء الإضافة: ' + error.message);
     } else if (data) {
       setPlayers([...players, ...data]);
       setNewPlayer({ name: '', position: 'هجوم', age: 12, pace: 80, skill: 85 });
+      alert('تم إضافة اللاعب بنجاح إلى السحابة!');
     }
   }
 
@@ -190,6 +192,4 @@ export default function App() {
               <input 
                 type="number" 
                 placeholder="العمر" 
-                value={newPlayer.age}
-                onChange={(e) => setNewPlayer({...newPlayer, age: Number(e.target.value)})}
-                className="bg-[#0B132
+                value={new
