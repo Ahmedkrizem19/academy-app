@@ -2133,26 +2133,42 @@ button:focus-visible, [role="button"]:focus-visible { outline:2px solid #f0d18f;
 }
 
 /* =====================================================
-   تنسيقات الشعار والعلامة التجارية بالأكاديمية (Academy Brand)
+   الهيدر والشعار (نسخة نهائية)
 ===================================================== */
+.topbar {
+  display: flex !important;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  padding: 10px 14px !important;
+  min-height: unset !important;
+  position: sticky !important;
+  top: 0;
+}
+
 .academy-brand {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: flex-start;
-  gap: 14px;
+  gap: 12px;
   direction: rtl;
   width: 100%;
+  min-width: 0;
 }
 
-.academy-logo {
-  width: 72px;
-  height: 72px;
+.academy-brand img.academy-logo {
+  width: 56px !important;
+  height: 56px !important;
+  min-width: 56px;
+  max-width: 56px;
   object-fit: contain;
   border-radius: 50%;
-  border: 3px solid #d9ad55;
+  background: #fff;
+  border: 2px solid var(--gold);
   padding: 3px;
   flex-shrink: 0;
+  box-shadow: 0 0 0 4px rgba(217,173,85,.12);
 }
 
 .academy-title {
@@ -2160,41 +2176,52 @@ button:focus-visible, [role="button"]:focus-visible { outline:2px solid #f0d18f;
   flex-direction: column;
   align-items: flex-start;
   text-align: right;
+  min-width: 0;
+  flex: 1;
 }
 
 .academy-title h1 {
-  color: #d9ad55;
-  font-family: 'Cairo', sans-serif;
-  font-size: clamp(16px, 2.5vw, 23px);
+  color: var(--gold) !important;
+  font-size: clamp(13px, 4vw, 20px) !important;
   font-weight: 900;
+  line-height: 1.4;
   margin: 0;
-  line-height: 1.5;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .academy-title p {
-  color: #ffffff;
-  font-family: 'Cairo', sans-serif;
-  font-size: 14px;
-  margin: 4px 0 0;
+  color: #fff;
+  font-size: 11px;
   font-weight: 600;
+  margin: 3px 0 0;
+  opacity: .85;
 }
 
-@media (max-width: 480px) {
-  .academy-brand {
-    gap: 9px;
-  }
-
-  .academy-logo {
-    width: 55px;
-    height: 55px;
-  }
-
-  .academy-title h1 {
-    font-size: 15px;
-  }
-
-  .academy-title p {
-    font-size: 11px;
-  }
+.header-actions {
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: flex-start;
+  gap: 8px;
+  flex-wrap: nowrap;
+  width: 100%;
 }
+
+@media (min-width: 761px) {
+  .topbar {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px clamp(16px, 5vw, 76px) !important;
+  }
+  .academy-brand { width: auto; }
+  .header-actions { width: auto; }
+  .academy-brand img.academy-logo {
+    width: 68px !important;
+    height: 68px !important;
+    min-width: 68px;
+    max-width: 68px;
+  }
+  .academy-title h1 { font-size: 22px !important; }
+  .academy-title p { font-size: 13px; }
+}
+  
