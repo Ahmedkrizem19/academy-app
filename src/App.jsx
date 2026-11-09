@@ -9,7 +9,7 @@ import {
   ChevronLeft, ChevronRight, Home, Clock, MapPin,
   Smartphone, Shield, FileText, Download, UploadCloud,
   Eye, ArrowRight, User, Database, Palette,
-  RotateCcw, Type, SlidersHorizontal
+  RotateCcw, Type, SlidersHorizontal, Star
 } from 'lucide-react';
 
 // ==========================================
@@ -82,6 +82,7 @@ const initialSettings = {
   heroOverlay: 55,
   playerExtraFieldNames: [],
 
+  playerOfWeekId: null,
   playerOfWeekName: 'نجم الأكاديمية',
   playerOfWeekDescription: 'تكريم المواهب والتميز الرياضي.',
 
@@ -1323,6 +1324,7 @@ export default function App() {
   const currentSlide =
     settings.slides?.[slideIndex] ||
     settings.slides?.[0];
+  const selectedPlayerOfWeek = players.find(player => String(player.id) === String(settings.playerOfWeekId));
 
   const tabs = [
     { id: 'home', label: 'الرئيسية', icon: Home },
@@ -1757,33 +1759,6 @@ export default function App() {
               </div>
             </div>
 
-            {settings.slides?.length > 1 && (
-              <>
-                <button
-                  onClick={() =>
-                    setSlideIndex(
-                      (slideIndex - 1 + settings.slides.length) %
-                      settings.slides.length
-                    )
-                  }
-                  className="slide-arrow slide-next"
-                >
-                  <ChevronRight />
-                </button>
-
-                <button
-                  onClick={() =>
-                    setSlideIndex(
-                      (slideIndex + 1) % settings.slides.length
-                    )
-                  }
-                  className="slide-arrow slide-prev"
-                >
-                  <ChevronLeft />
-                </button>
-              </>
-            )}
-
           </section>
         )}
 
@@ -1981,6 +1956,27 @@ export default function App() {
                       style={{ cursor: 'pointer' }}
                     >
 
+                      {isAdmin && (
+                        <button
+                          type="button"
+                          className={`player-week-star ${String(settings.playerOfWeekId) === String(player.id) ? 'is-selected' : ''}`}
+                          title={String(settings.playerOfWeekId) === String(player.id) ? 'هذا لاعب الأسبوع' : 'تحديد لاعب الأسبوع'}
+                          aria-label={`تحديد ${player.name} لاعبًا للأسبوع`}
+                          onClick={async e => {
+                            e.stopPropagation();
+                            const updated = {
+                              ...settings,
+                              playerOfWeekId: player.id,
+                              playerOfWeekName: player.name,
+                              playerOfWeek: player.photo || settings.playerOfWeek
+                            };
+                            await saveSettings(updated);
+                          }}
+                        >
+                          <Star size={17} fill={String(settings.playerOfWeekId) === String(player.id) ? 'currentColor' : 'none'} />
+                        </button>
+                      )}
+
                       <div
                         className="player-image player-image-round"
                         style={{
@@ -2172,11 +2168,12 @@ export default function App() {
 
                 <Trophy size={45} />
 
-                <h2>{settings.playerOfWeekName}</h2>
+                <h2>{selectedPlayerOfWeek?.name || settings.playerOfWeekName}</h2>
+                {selectedPlayerOfWeek?.position && <p className="honor-player-position">{selectedPlayerOfWeek.position}</p>}
 
                 <img
-                  src={settings.playerOfWeek}
-                  alt="لاعب الأسبوع"
+                  src={selectedPlayerOfWeek?.photo || settings.playerOfWeek}
+                  alt={selectedPlayerOfWeek?.name || 'لاعب الأسبوع'}
                   style={{
                     width: '100%',
                     maxWidth: 420,
@@ -2276,26 +2273,6 @@ export default function App() {
                 <motion.div className="player-detail-position" variants={{ hidden: { opacity: 0, y: 15 }, visible: { opacity: 1, y: 0 } }}>
                   {selectedPlayer.position || 'لاعب الأكاديمية'}
                 </motion.div>
-
-              {getPlayerAge(selectedPlayer) !== null && (
-                <motion.p variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }} className="player-age detail-age">العمر: {getPlayerAge(selectedPlayer)} سنة</motion.p>
-              )}
-
-              <motion.div className="stats-grid" variants={{ hidden: { opacity: 0, y: 15 }, visible: { opacity: 1, y: 0 } }}>
-
-                <div style={cardStyle}>
-                  <Trophy size={22} />
-                  <h3>{selectedPlayer.pace ?? 0}</h3>
-                  <span>السرعة</span>
-                </div>
-
-                <div style={cardStyle}>
-                  <Award size={22} />
-                  <h3>{selectedPlayer.skill ?? 0}</h3>
-                  <span>المهارة</span>
-                </div>
-
-              </motion.div>
 
               {Object.entries(selectedPlayer.extra_data || {}).filter(([key]) => !(settings.playerExtraFieldNames || []).length || settings.playerExtraFieldNames.includes(key)).map(
                 ([key, value], index) => (
