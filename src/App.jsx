@@ -7,16 +7,30 @@ import {
   Settings, Bell, Image, Upload, Pencil, Save,
   ChevronLeft, ChevronRight, Home, Clock, MapPin,
   Smartphone, Shield, FileText, Download, UploadCloud,
-  Eye, ArrowRight, User, Database
+  Eye, ArrowRight, User, Database, Palette,
+  RotateCcw, Type, SlidersHorizontal
 } from 'lucide-react';
 
 const supabaseUrl = 'https://gyvxvomagibbamhvfwbn.supabase.co';
 
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd5dnh2b21hZ2liYmFtaHZ3Ym4iLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc5NDE4Mzk4NywiZXhwIjoyMTA5NzU5OTk5fQ.fxg8h2IgRR3NcE9mY9piACg1feH7U_UMHeadjsfFjGQ';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6Imd5dnh2b21hZ2liYmFtaHZ3Ym4iLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc5NDE4Mzk4NywiZXhwIjoyMTA5NzU5OTk5fQ.fxg8h2IgRR3NcE9mY9piACg1feH7U_UMHeadjsfFjGQ';
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 const ADMIN_UID = 'd3ce2ae4-6736-4782-ae55-5f9359effd8a';
+
+const defaultTheme = {
+  navy: '#0b132b',
+  navyLight: '#172442',
+  gold: '#d9ad55',
+  white: '#ffffff',
+  orange: '#f28c28',
+  muted: '#aab4c8',
+  card: '#14213d',
+  fontFamily: 'Cairo',
+  cardRadius: 17,
+  cardShadow: true
+};
 
 const initialSettings = {
   logo: '/assets/logo.jpg',
@@ -36,16 +50,17 @@ const initialSettings = {
   imageHeight: 360,
   playerImageHeight: 210,
   playerOfWeekName: 'نجم الأكاديمية',
-  playerOfWeekDescription: 'تكريم المواهب والتميز الرياضي.'
+  playerOfWeekDescription: 'تكريم المواهب والتميز الرياضي.',
+  theme: { ...defaultTheme }
 };
 
 const cardStyle = {
-  background: '#fff',
-  color: '#172442',
-  borderRadius: 16,
+  background: 'var(--card)',
+  color: 'var(--text)',
+  borderRadius: 'var(--card-radius)',
   padding: 18,
-  boxShadow: '0 4px 18px rgba(0,0,0,.06)',
-  border: '1px solid #eee'
+  boxShadow: 'var(--card-shadow)',
+  border: '1px solid var(--border)'
 };
 
 const inputStyle = {
@@ -63,7 +78,7 @@ const primaryButton = {
   border: 0,
   borderRadius: 9,
   padding: '11px 16px',
-  background: '#0B132B',
+  background: 'var(--primary)',
   color: '#fff',
   cursor: 'pointer',
   display: 'inline-flex',
@@ -75,8 +90,8 @@ const primaryButton = {
 
 const goldButton = {
   ...primaryButton,
-  background: 'linear-gradient(135deg,#d9ad55,#f0c978)',
-  color: '#0b132b',
+  background: 'var(--gold)',
+  color: 'var(--primary)',
   fontWeight: 800
 };
 
@@ -91,6 +106,45 @@ const modalBackdrop = {
   justifyContent: 'center',
   padding: 15
 };
+
+const themeLabels = {
+  navy: 'اللون الأساسي',
+  navyLight: 'اللون الثانوي',
+  gold: 'اللون الذهبي',
+  orange: 'اللون البرتقالي',
+  white: 'لون النص الفاتح',
+  muted: 'لون النص الثانوي',
+  card: 'لون البطاقات'
+};
+
+const fontOptions = [
+  { value: 'Cairo', label: 'Cairo - القاهرة' },
+  { value: 'Tajawal', label: 'Tajawal - تجوال' },
+  { value: 'Almarai', label: 'Almarai - المراعي' }
+];
+
+function normalizeTheme(theme) {
+  const merged = { ...defaultTheme, ...(theme || {}) };
+
+  Object.keys(themeLabels).forEach(key => {
+    if (!/^#[0-9a-fA-F]{6}$/.test(merged[key])) {
+      merged[key] = defaultTheme[key];
+    }
+  });
+
+  if (!fontOptions.some(font => font.value === merged.fontFamily)) {
+    merged.fontFamily = 'Cairo';
+  }
+
+  merged.cardRadius = Math.min(
+    30,
+    Math.max(5, Number(merged.cardRadius) || 17)
+  );
+
+  merged.cardShadow = merged.cardShadow !== false;
+
+  return merged;
+}
 
 export default function App() {
   const [players, setPlayers] = useState([]);
@@ -147,6 +201,34 @@ export default function App() {
     body: '',
     is_published: true
   });
+
+  // تطبيق إعدادات المظهر على الموقع
+  useEffect(() => {
+    const theme = normalizeTheme(settings.theme);
+    const root = document.documentElement;
+
+    root.style.setProperty('--primary', theme.navy);
+    root.style.setProperty('--navy', theme.navy);
+    root.style.setProperty('--navy-light', theme.navyLight);
+    root.style.setProperty('--gold', theme.gold);
+    root.style.setProperty('--orange', theme.orange);
+    root.style.setProperty('--white', theme.white);
+    root.style.setProperty('--muted', theme.muted);
+    root.style.setProperty('--card', theme.card);
+    root.style.setProperty('--text', theme.white);
+    root.style.setProperty('--card-radius', `${theme.cardRadius}px`);
+    root.style.setProperty(
+      '--card-shadow',
+      theme.cardShadow
+        ? '0 8px 25px rgba(0,0,0,.16)'
+        : 'none'
+    );
+
+    root.style.setProperty(
+      '--font-family',
+      `'${theme.fontFamily}', sans-serif`
+    );
+  }, [settings.theme]);
 
   useEffect(() => {
     loadAll();
@@ -222,9 +304,12 @@ export default function App() {
       if (!results[2].error) setNotifications(results[2].data || []);
 
       if (results[3].data?.content) {
+        const saved = results[3].data.content;
+
         setSettings({
           ...initialSettings,
-          ...results[3].data.content
+          ...saved,
+          theme: normalizeTheme(saved.theme)
         });
       }
     } catch (err) {
@@ -312,11 +397,16 @@ export default function App() {
   async function saveSettings(updatedSettings) {
     if (!isAdmin) return false;
 
+    const safeSettings = {
+      ...updatedSettings,
+      theme: normalizeTheme(updatedSettings.theme)
+    };
+
     const { error } = await supabase
       .from('academy_settings')
       .upsert({
         id: 'main',
-        content: updatedSettings,
+        content: safeSettings,
         updated_at: new Date().toISOString()
       });
 
@@ -325,9 +415,30 @@ export default function App() {
       return false;
     }
 
-    setSettings(updatedSettings);
+    setSettings(safeSettings);
     alert('تم حفظ إعدادات الموقع بنجاح');
     return true;
+  }
+
+  function updateTheme(key, value) {
+    setSettings(old => ({
+      ...old,
+      theme: {
+        ...normalizeTheme(old.theme),
+        [key]: value
+      }
+    }));
+  }
+
+  function resetTheme() {
+    if (!window.confirm('هل تريد إعادة ألوان وخطوط الموقع إلى الوضع الافتراضي؟')) {
+      return;
+    }
+
+    setSettings(old => ({
+      ...old,
+      theme: { ...defaultTheme }
+    }));
   }
 
   function openNewPlayer() {
@@ -578,8 +689,6 @@ export default function App() {
     setInstallPrompt(null);
   }
 
-  // النسخ الاحتياطي
-
   async function exportBackup() {
     if (!isAdmin) return;
 
@@ -669,21 +778,23 @@ export default function App() {
         if (error) throw error;
       }
 
+      const restoredSettings = {
+        ...initialSettings,
+        ...backup.settings,
+        theme: normalizeTheme(backup.settings.theme)
+      };
+
       const { error: settingsError } = await supabase
         .from('academy_settings')
         .upsert({
           id: 'main',
-          content: backup.settings,
+          content: restoredSettings,
           updated_at: new Date().toISOString()
         });
 
       if (settingsError) throw settingsError;
 
-      setSettings({
-        ...initialSettings,
-        ...backup.settings
-      });
-
+      setSettings(restoredSettings);
       await loadAll();
 
       alert('تم استيراد النسخة الاحتياطية بنجاح.');
@@ -713,60 +824,15 @@ export default function App() {
     { id: 'honor', label: 'لاعب الأسبوع', icon: Trophy }
   ];
 
-  // شاشة البداية
-
   if (!hasEntered) {
     return (
       <div className="academy" dir="rtl">
-        <div style={{
-          minHeight: '100vh',
-          background: 'radial-gradient(circle at top,#24365e 0%,#0b132b 55%,#060b18 100%)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: 20,
-          position: 'relative',
-          overflow: 'hidden'
-        }}>
-          <div style={{
-            position: 'absolute',
-            width: 300,
-            height: 300,
-            borderRadius: '50%',
-            background: 'rgba(217,173,85,.09)',
-            top: '-100px',
-            right: '-100px',
-            filter: 'blur(15px)'
-          }} />
-
-          <div style={{
-            position: 'absolute',
-            width: 280,
-            height: 280,
-            borderRadius: '50%',
-            background: 'rgba(242,140,40,.08)',
-            bottom: '-100px',
-            left: '-100px',
-            filter: 'blur(15px)'
-          }} />
-
+        <div className="welcome-screen">
           <motion.div
             initial={{ opacity: 0, y: 25 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: .7 }}
-            style={{
-              width: '100%',
-              maxWidth: 480,
-              textAlign: 'center',
-              position: 'relative',
-              zIndex: 2,
-              padding: 30,
-              borderRadius: 25,
-              background: 'rgba(255,255,255,.045)',
-              border: '1px solid rgba(217,173,85,.28)',
-              boxShadow: '0 20px 60px rgba(0,0,0,.3)',
-              backdropFilter: 'blur(10px)'
-            }}
+            className="welcome-card"
           >
             <motion.img
               initial={{ scale: .8, opacity: 0 }}
@@ -774,61 +840,23 @@ export default function App() {
               transition={{ delay: .2 }}
               src={settings.logo}
               alt="شعار الأكاديمية"
-              style={{
-                width: 145,
-                height: 145,
-                objectFit: 'contain',
-                borderRadius: 20,
-                marginBottom: 20,
-                background: 'rgba(255,255,255,.06)',
-                padding: 8
-              }}
+              className="welcome-logo"
             />
 
-            <div style={{
-              color: '#d9ad55',
-              fontSize: 12,
-              fontWeight: 800,
-              letterSpacing: 2,
-              marginBottom: 12
-            }}>
-              أهلاً وسهلاً بكم
-            </div>
+            <div className="welcome-tag">أهلاً وسهلاً بكم</div>
 
-            <h1 style={{
-              color: '#fff',
-              fontSize: 'clamp(22px,5vw,31px)',
-              lineHeight: 1.7,
-              margin: '0 0 10px'
-            }}>
+            <h1>
               أكاديمية الحملة الأردنية الهاشمية الرياضية للأيتام
             </h1>
 
-            <p style={{
-              color: '#c4ccdc',
-              fontSize: 15,
-              marginBottom: 30
-            }}>
-              رعاية المواهب وصناعة الأبطال
-            </p>
+            <p>رعاية المواهب وصناعة الأبطال</p>
 
-            <div style={{
-              display: 'grid',
-              gap: 13,
-              maxWidth: 330,
-              margin: 'auto'
-            }}>
+            <div className="welcome-buttons">
               <motion.button
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: .97 }}
                 onClick={enterAsVisitor}
-                style={{
-                  ...goldButton,
-                  padding: 16,
-                  fontSize: 17,
-                  borderRadius: 13,
-                  width: '100%'
-                }}
+                style={{ ...goldButton, padding: 16, fontSize: 17 }}
               >
                 <Eye size={21} />
                 الدخول كزائر
@@ -841,12 +869,9 @@ export default function App() {
                 style={{
                   ...primaryButton,
                   background: 'transparent',
-                  border: '1px solid #d9ad55',
-                  color: '#fff',
+                  border: '1px solid var(--gold)',
                   padding: 15,
-                  fontSize: 16,
-                  borderRadius: 13,
-                  width: '100%'
+                  fontSize: 16
                 }}
               >
                 <Shield size={20} />
@@ -854,13 +879,7 @@ export default function App() {
               </motion.button>
             </div>
 
-            <p style={{
-              color: '#8995ad',
-              fontSize: 12,
-              marginTop: 30
-            }}>
-              معًا نصنع المستقبل
-            </p>
+            <small>معًا نصنع المستقبل</small>
           </motion.div>
         </div>
 
@@ -873,15 +892,7 @@ export default function App() {
                 initial={{ scale: .9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: .9, opacity: 0 }}
-                style={{
-                  width: '100%',
-                  maxWidth: 420,
-                  background: '#fff',
-                  color: '#172442',
-                  borderRadius: 18,
-                  padding: 25,
-                  position: 'relative'
-                }}
+                style={{ width: '100%', maxWidth: 420, position: 'relative' }}
               >
                 <button
                   type="button"
@@ -891,8 +902,7 @@ export default function App() {
                   <X />
                 </button>
 
-                <Lock size={35} style={{ color: '#d9ad55' }} />
-
+                <Lock size={35} style={{ color: 'var(--gold)' }} />
                 <h2>دخول الإدارة</h2>
 
                 <input
@@ -913,11 +923,7 @@ export default function App() {
                   required
                 />
 
-                <button
-                  type="submit"
-                  className="submit-btn"
-                  style={{ width: '100%' }}
-                >
+                <button type="submit" className="submit-btn" style={{ width: '100%' }}>
                   تسجيل الدخول
                 </button>
               </motion.form>
@@ -928,11 +934,8 @@ export default function App() {
     );
   }
 
-  // واجهة الموقع
-
   return (
     <div className="academy" dir="rtl">
-
       <header className="topbar">
         <div className="brand">
           <img src={settings.logo} alt="شعار الأكاديمية" />
@@ -949,17 +952,12 @@ export default function App() {
             title="الإشعارات"
           >
             <Bell size={19} />
-            {notifications.length > 0 && (
-              <span>{notifications.length}</span>
-            )}
+            {notifications.length > 0 && <span>{notifications.length}</span>}
           </button>
 
           {isAdmin ? (
             <>
-              <button
-                className="admin-btn"
-                onClick={() => setShowSettings(true)}
-              >
+              <button className="admin-btn" onClick={() => setShowSettings(true)}>
                 <Settings size={17} />
                 لوحة التحكم
               </button>
@@ -970,10 +968,7 @@ export default function App() {
               </button>
             </>
           ) : (
-            <button
-              className="admin-btn"
-              onClick={() => setHasEntered(false)}
-            >
+            <button className="admin-btn" onClick={() => setHasEntered(false)}>
               <ArrowRight size={17} />
               شاشة البداية
             </button>
@@ -982,12 +977,8 @@ export default function App() {
       </header>
 
       <main className="container">
-
         {activeTab === 'home' && (
-          <section
-            className="hero"
-            style={{ position: 'relative', overflow: 'hidden' }}
-          >
+          <section className="hero" style={{ position: 'relative', overflow: 'hidden' }}>
             {currentSlide?.image && (
               <img
                 src={currentSlide.image}
@@ -1002,12 +993,8 @@ export default function App() {
 
             <div className="hero-overlay">
               <span className="hero-tag">معًا نحو المستقبل</span>
-              <h2>
-                {currentSlide?.title || 'نصنع الأبطال ونرعى المواهب'}
-              </h2>
-              <p>
-                {currentSlide?.subtitle || 'رعاية المواهب وبناء جيل متميز.'}
-              </p>
+              <h2>{currentSlide?.title || 'نصنع الأبطال ونرعى المواهب'}</h2>
+              <p>{currentSlide?.subtitle || 'رعاية المواهب وبناء جيل متميز.'}</p>
 
               <div className="hero-stats">
                 <div>
@@ -1027,15 +1014,9 @@ export default function App() {
               <>
                 <button
                   onClick={() => setSlideIndex(
-                    (slideIndex - 1 + settings.slides.length) %
-                    settings.slides.length
+                    (slideIndex - 1 + settings.slides.length) % settings.slides.length
                   )}
-                  style={{
-                    position: 'absolute',
-                    top: '50%',
-                    right: 12,
-                    zIndex: 3
-                  }}
+                  className="slide-arrow slide-next"
                 >
                   <ChevronRight />
                 </button>
@@ -1044,12 +1025,7 @@ export default function App() {
                   onClick={() => setSlideIndex(
                     (slideIndex + 1) % settings.slides.length
                   )}
-                  style={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: 12,
-                    zIndex: 3
-                  }}
+                  className="slide-arrow slide-prev"
                 >
                   <ChevronLeft />
                 </button>
@@ -1076,7 +1052,6 @@ export default function App() {
         </nav>
 
         <AnimatePresence mode="wait">
-
           {activeTab === 'home' && (
             <motion.section
               key="home"
@@ -1092,11 +1067,7 @@ export default function App() {
                 </div>
               </div>
 
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit,minmax(190px,1fr))',
-                gap: 15
-              }}>
+              <div className="stats-grid">
                 <div style={cardStyle}>
                   <Users size={30} />
                   <h3>{players.length}</h3>
@@ -1151,10 +1122,7 @@ export default function App() {
                   />
                 </div>
 
-                <select
-                  value={position}
-                  onChange={e => setPosition(e.target.value)}
-                >
+                <select value={position} onChange={e => setPosition(e.target.value)}>
                   <option value="الكل">جميع المراكز</option>
                   <option value="هجوم">هجوم</option>
                   <option value="وسط">وسط</option>
@@ -1219,7 +1187,6 @@ export default function App() {
 
                       <div className="player-info">
                         <h3>{player.name}</h3>
-
                         <p style={{ fontSize: 13 }}>
                           {player.position || 'لاعب الأكاديمية'}
                         </p>
@@ -1238,13 +1205,7 @@ export default function App() {
                         </button>
 
                         {isAdmin && (
-                          <div
-                            style={{
-                              display: 'flex',
-                              gap: 7,
-                              marginTop: 10
-                            }}
-                          >
+                          <div className="player-actions">
                             <button
                               className="admin-btn"
                               onClick={e => {
@@ -1291,10 +1252,7 @@ export default function App() {
                 </div>
 
                 {isAdmin && (
-                  <button
-                    className="add-btn"
-                    onClick={() => setShowScheduleForm(true)}
-                  >
+                  <button className="add-btn" onClick={() => setShowScheduleForm(true)}>
                     <Plus size={18} />
                     إضافة موعد
                   </button>
@@ -1307,33 +1265,21 @@ export default function App() {
                   <h3>لا توجد مواعيد منشورة</h3>
                 </div>
               ) : (
-                <div style={{ display: 'grid', gap: 12 }}>
+                <div className="schedule-list">
                   {sessions.map(item => (
                     <div key={item.id} style={cardStyle}>
                       <h3>{item.title}</h3>
-                      <p>
-                        <Calendar size={15} />
-                        {item.session_date || ''}
-                      </p>
-                      <p>
-                        <Clock size={15} />
-                        {item.start_time || ''} - {item.end_time || ''}
-                      </p>
+                      <p><Calendar size={15} /> {item.session_date || ''}</p>
+                      <p><Clock size={15} /> {item.start_time || ''} - {item.end_time || ''}</p>
 
                       {item.location && (
-                        <p>
-                          <MapPin size={15} />
-                          {item.location}
-                        </p>
+                        <p><MapPin size={15} /> {item.location}</p>
                       )}
 
                       {item.notes && <p>{item.notes}</p>}
 
                       {isAdmin && (
-                        <button
-                          className="delete-btn"
-                          onClick={() => deleteSchedule(item.id)}
-                        >
+                        <button className="delete-btn" onClick={() => deleteSchedule(item.id)}>
                           <Trash2 size={15} />
                           حذف الموعد
                         </button>
@@ -1373,7 +1319,6 @@ export default function App() {
               </div>
             </motion.section>
           )}
-
         </AnimatePresence>
 
         <footer className="footer">
@@ -1388,11 +1333,9 @@ export default function App() {
             </button>
           )}
         </footer>
-
       </main>
 
       {/* تفاصيل اللاعب */}
-
       <AnimatePresence>
         {selectedPlayer && (
           <div style={modalBackdrop}>
@@ -1400,36 +1343,14 @@ export default function App() {
               initial={{ opacity: 0, y: 30, scale: .95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, scale: .95 }}
-              style={{
-                width: '100%',
-                maxWidth: 470,
-                maxHeight: '90vh',
-                overflowY: 'auto',
-                background: '#fff',
-                color: '#172442',
-                borderRadius: 20,
-                padding: 20,
-                position: 'relative'
-              }}
+              className="modal player-detail-modal"
             >
-              <button
-                className="close-btn"
-                onClick={() => setSelectedPlayer(null)}
-              >
+              <button className="close-btn" onClick={() => setSelectedPlayer(null)}>
                 <X />
               </button>
 
               {selectedPlayer.photo ? (
-                <img
-                  src={selectedPlayer.photo}
-                  alt={selectedPlayer.name}
-                  style={{
-                    width: '100%',
-                    height: 260,
-                    objectFit: 'cover',
-                    borderRadius: 15
-                  }}
-                />
+                <img src={selectedPlayer.photo} alt={selectedPlayer.name} className="player-detail-image" />
               ) : (
                 <UserCircle size={100} />
               )}
@@ -1438,24 +1359,13 @@ export default function App() {
                 {selectedPlayer.name}
               </h2>
 
-              <div style={{
-                textAlign: 'center',
-                color: '#b58b39',
-                fontWeight: 800
-              }}>
+              <div className="player-detail-position">
                 {selectedPlayer.position || 'لاعب الأكاديمية'}
               </div>
 
-              {selectedPlayer.age && (
-                <p>العمر: {selectedPlayer.age} سنة</p>
-              )}
+              {selectedPlayer.age && <p>العمر: {selectedPlayer.age} سنة</p>}
 
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: 10,
-                marginTop: 18
-              }}>
+              <div className="stats-grid">
                 <div style={cardStyle}>
                   <Trophy size={22} />
                   <h3>{selectedPlayer.pace ?? 0}</h3>
@@ -1469,13 +1379,11 @@ export default function App() {
                 </div>
               </div>
 
-              {Object.entries(selectedPlayer.extra_data || {}).map(
-                ([key, value]) => (
-                  <p key={key}>
-                    <strong>{key}:</strong> {String(value)}
-                  </p>
-                )
-              )}
+              {Object.entries(selectedPlayer.extra_data || {}).map(([key, value]) => (
+                <p key={key}>
+                  <strong>{key}:</strong> {String(value)}
+                </p>
+              ))}
 
               <button
                 className="submit-btn"
@@ -1490,7 +1398,6 @@ export default function App() {
       </AnimatePresence>
 
       {/* إضافة وتعديل لاعب */}
-
       <AnimatePresence>
         {showPlayerForm && isAdmin && (
           <div style={modalBackdrop}>
@@ -1499,42 +1406,25 @@ export default function App() {
               onSubmit={savePlayer}
               initial={{ scale: .9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              style={{
-                maxHeight: '90vh',
-                overflowY: 'auto',
-                position: 'relative'
-              }}
             >
-              <button
-                type="button"
-                className="close-btn"
-                onClick={() => setShowPlayerForm(false)}
-              >
+              <button type="button" className="close-btn" onClick={() => setShowPlayerForm(false)}>
                 <X />
               </button>
 
-              <h2>
-                {editingPlayer ? 'تعديل بيانات اللاعب' : 'إضافة لاعب جديد'}
-              </h2>
+              <h2>{editingPlayer ? 'تعديل بيانات اللاعب' : 'إضافة لاعب جديد'}</h2>
 
               <input
                 style={inputStyle}
                 placeholder="اسم اللاعب"
                 value={playerForm.name}
-                onChange={e => setPlayerForm({
-                  ...playerForm,
-                  name: e.target.value
-                })}
+                onChange={e => setPlayerForm({ ...playerForm, name: e.target.value })}
                 required
               />
 
               <select
                 style={inputStyle}
                 value={playerForm.position}
-                onChange={e => setPlayerForm({
-                  ...playerForm,
-                  position: e.target.value
-                })}
+                onChange={e => setPlayerForm({ ...playerForm, position: e.target.value })}
               >
                 <option value="هجوم">هجوم</option>
                 <option value="وسط">وسط</option>
@@ -1549,10 +1439,7 @@ export default function App() {
                 min="5"
                 max="25"
                 value={playerForm.age}
-                onChange={e => setPlayerForm({
-                  ...playerForm,
-                  age: e.target.value
-                })}
+                onChange={e => setPlayerForm({ ...playerForm, age: e.target.value })}
               />
 
               <input
@@ -1562,10 +1449,7 @@ export default function App() {
                 min="0"
                 max="100"
                 value={playerForm.pace}
-                onChange={e => setPlayerForm({
-                  ...playerForm,
-                  pace: e.target.value
-                })}
+                onChange={e => setPlayerForm({ ...playerForm, pace: e.target.value })}
               />
 
               <input
@@ -1575,16 +1459,10 @@ export default function App() {
                 min="0"
                 max="100"
                 value={playerForm.skill}
-                onChange={e => setPlayerForm({
-                  ...playerForm,
-                  skill: e.target.value
-                })}
+                onChange={e => setPlayerForm({ ...playerForm, skill: e.target.value })}
               />
 
-              <label style={{ display: 'block', marginBottom: 8 }}>
-                صورة اللاعب JPG
-              </label>
-
+              <label>صورة اللاعب JPG</label>
               <input
                 style={inputStyle}
                 type="file"
@@ -1593,62 +1471,35 @@ export default function App() {
               />
 
               {playerForm.photo && (
-                <img
-                  src={playerForm.photo}
-                  alt="معاينة"
-                  style={{
-                    width: 120,
-                    height: 120,
-                    objectFit: 'cover',
-                    borderRadius: 10
-                  }}
-                />
+                <img src={playerForm.photo} alt="معاينة" className="upload-preview" />
               )}
 
               <hr />
-
               <h3>بيانات إضافية للاعب</h3>
 
               {extraFields.map((field, index) => (
-                <div
-                  key={index}
-                  style={{ display: 'flex', gap: 5 }}
-                >
+                <div key={index} className="extra-field-row">
                   <input
                     style={inputStyle}
                     placeholder="اسم الحقل"
                     value={field.key}
-                    onChange={e => {
-                      setExtraFields(old =>
-                        old.map((item, i) =>
-                          i === index
-                            ? { ...item, key: e.target.value }
-                            : item
-                        )
-                      );
-                    }}
+                    onChange={e => setExtraFields(old =>
+                      old.map((item, i) => i === index ? { ...item, key: e.target.value } : item)
+                    )}
                   />
 
                   <input
                     style={inputStyle}
                     placeholder="القيمة"
                     value={field.value}
-                    onChange={e => {
-                      setExtraFields(old =>
-                        old.map((item, i) =>
-                          i === index
-                            ? { ...item, value: e.target.value }
-                            : item
-                        )
-                      );
-                    }}
+                    onChange={e => setExtraFields(old =>
+                      old.map((item, i) => i === index ? { ...item, value: e.target.value } : item)
+                    )}
                   />
 
                   <button
                     type="button"
-                    onClick={() => setExtraFields(old =>
-                      old.filter((_, i) => i !== index)
-                    )}
+                    onClick={() => setExtraFields(old => old.filter((_, i) => i !== index))}
                   >
                     <Trash2 size={17} />
                   </button>
@@ -1658,10 +1509,7 @@ export default function App() {
               <button
                 type="button"
                 style={{ ...primaryButton, marginBottom: 12 }}
-                onClick={() => setExtraFields(old => [
-                  ...old,
-                  { key: '', value: '' }
-                ])}
+                onClick={() => setExtraFields(old => [...old, { key: '', value: '' }])}
               >
                 <Plus size={16} />
                 إضافة حقل جديد
@@ -1677,7 +1525,6 @@ export default function App() {
       </AnimatePresence>
 
       {/* إضافة موعد */}
-
       <AnimatePresence>
         {showScheduleForm && isAdmin && (
           <div style={modalBackdrop}>
@@ -1686,13 +1533,8 @@ export default function App() {
               onSubmit={saveSchedule}
               initial={{ scale: .9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              style={{ position: 'relative' }}
             >
-              <button
-                type="button"
-                className="close-btn"
-                onClick={() => setShowScheduleForm(false)}
-              >
+              <button type="button" className="close-btn" onClick={() => setShowScheduleForm(false)}>
                 <X />
               </button>
 
@@ -1702,10 +1544,7 @@ export default function App() {
                 style={inputStyle}
                 placeholder="عنوان الموعد"
                 value={scheduleForm.title}
-                onChange={e => setScheduleForm({
-                  ...scheduleForm,
-                  title: e.target.value
-                })}
+                onChange={e => setScheduleForm({ ...scheduleForm, title: e.target.value })}
                 required
               />
 
@@ -1714,10 +1553,7 @@ export default function App() {
                 style={inputStyle}
                 type="date"
                 value={scheduleForm.session_date}
-                onChange={e => setScheduleForm({
-                  ...scheduleForm,
-                  session_date: e.target.value
-                })}
+                onChange={e => setScheduleForm({ ...scheduleForm, session_date: e.target.value })}
               />
 
               <label>وقت البداية</label>
@@ -1725,10 +1561,7 @@ export default function App() {
                 style={inputStyle}
                 type="time"
                 value={scheduleForm.start_time}
-                onChange={e => setScheduleForm({
-                  ...scheduleForm,
-                  start_time: e.target.value
-                })}
+                onChange={e => setScheduleForm({ ...scheduleForm, start_time: e.target.value })}
               />
 
               <label>وقت النهاية</label>
@@ -1736,42 +1569,30 @@ export default function App() {
                 style={inputStyle}
                 type="time"
                 value={scheduleForm.end_time}
-                onChange={e => setScheduleForm({
-                  ...scheduleForm,
-                  end_time: e.target.value
-                })}
+                onChange={e => setScheduleForm({ ...scheduleForm, end_time: e.target.value })}
               />
 
               <input
                 style={inputStyle}
                 placeholder="المكان"
                 value={scheduleForm.location}
-                onChange={e => setScheduleForm({
-                  ...scheduleForm,
-                  location: e.target.value
-                })}
+                onChange={e => setScheduleForm({ ...scheduleForm, location: e.target.value })}
               />
 
               <textarea
                 style={inputStyle}
                 placeholder="ملاحظات"
                 value={scheduleForm.notes}
-                onChange={e => setScheduleForm({
-                  ...scheduleForm,
-                  notes: e.target.value
-                })}
+                onChange={e => setScheduleForm({ ...scheduleForm, notes: e.target.value })}
               />
 
-              <button type="submit" className="submit-btn">
-                حفظ الموعد
-              </button>
+              <button type="submit" className="submit-btn">حفظ الموعد</button>
             </motion.form>
           </div>
         )}
       </AnimatePresence>
 
       {/* إضافة إشعار */}
-
       <AnimatePresence>
         {showNotificationForm && isAdmin && (
           <div style={modalBackdrop}>
@@ -1780,13 +1601,8 @@ export default function App() {
               onSubmit={saveNotification}
               initial={{ scale: .9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              style={{ position: 'relative' }}
             >
-              <button
-                type="button"
-                className="close-btn"
-                onClick={() => setShowNotificationForm(false)}
-              >
+              <button type="button" className="close-btn" onClick={() => setShowNotificationForm(false)}>
                 <X />
               </button>
 
@@ -1796,10 +1612,7 @@ export default function App() {
                 style={inputStyle}
                 placeholder="عنوان الإشعار"
                 value={notificationForm.title}
-                onChange={e => setNotificationForm({
-                  ...notificationForm,
-                  title: e.target.value
-                })}
+                onChange={e => setNotificationForm({ ...notificationForm, title: e.target.value })}
                 required
               />
 
@@ -1807,52 +1620,34 @@ export default function App() {
                 style={inputStyle}
                 placeholder="نص الإشعار"
                 value={notificationForm.body}
-                onChange={e => setNotificationForm({
-                  ...notificationForm,
-                  body: e.target.value
-                })}
+                onChange={e => setNotificationForm({ ...notificationForm, body: e.target.value })}
               />
 
               <label>
                 <input
                   type="checkbox"
                   checked={notificationForm.is_published}
-                  onChange={e => setNotificationForm({
-                    ...notificationForm,
-                    is_published: e.target.checked
-                  })}
+                  onChange={e => setNotificationForm({ ...notificationForm, is_published: e.target.checked })}
                 />
                 نشر الإشعار للجميع
               </label>
 
-              <button type="submit" className="submit-btn">
-                حفظ الإشعار
-              </button>
+              <button type="submit" className="submit-btn">حفظ الإشعار</button>
             </motion.form>
           </div>
         )}
       </AnimatePresence>
 
       {/* لوحة التحكم */}
-
       <AnimatePresence>
         {showSettings && isAdmin && (
           <div style={modalBackdrop}>
             <motion.div
-              className="modal add-modal"
+              className="modal add-modal settings-modal"
               initial={{ scale: .9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              style={{
-                maxHeight: '90vh',
-                overflowY: 'auto',
-                maxWidth: 650,
-                position: 'relative'
-              }}
             >
-              <button
-                className="close-btn"
-                onClick={() => setShowSettings(false)}
-              >
+              <button className="close-btn" onClick={() => setShowSettings(false)}>
                 <X />
               </button>
 
@@ -1861,160 +1656,188 @@ export default function App() {
                 لوحة تحكم الأكاديمية
               </h2>
 
+              {/* إعدادات المظهر الجديدة */}
               <div style={{ ...cardStyle, marginBottom: 14 }}>
-                <h3>
-                  <Image size={19} />
-                  الصور الرئيسية
-                </h3>
+                <h3><Palette size={20} /> تخصيص مظهر الموقع</h3>
+                <p>غيّر ألوان الموقع والخطوط وشكل البطاقات، ثم احفظ التعديلات.</p>
+
+                <div className="theme-preview">
+                  <div className="theme-preview-header">
+                    <span>معاينة المظهر</span>
+                    <span>الأكاديمية</span>
+                  </div>
+
+                  <div className="theme-preview-card">
+                    <strong>نص تجريبي للبطاقة</strong>
+                    <p>هذا مثال يوضح شكل الألوان والخط المختار.</p>
+                    <button type="button" style={goldButton}>زر تجريبي</button>
+                  </div>
+                </div>
+
+                <h4>ألوان الموقع</h4>
+
+                <div className="theme-colors-grid">
+                  {Object.entries(themeLabels).map(([key, label]) => (
+                    <label className="color-control" key={key}>
+                      <span>{label}</span>
+                      <input
+                        type="color"
+                        value={normalizeTheme(settings.theme)[key]}
+                        onChange={e => updateTheme(key, e.target.value)}
+                      />
+                      <small>{normalizeTheme(settings.theme)[key]}</small>
+                    </label>
+                  ))}
+                </div>
+
+                <hr />
+
+                <h4><Type size={18} /> نوع الخط</h4>
+                <select
+                  style={inputStyle}
+                  value={settings.theme?.fontFamily || 'Cairo'}
+                  onChange={e => updateTheme('fontFamily', e.target.value)}
+                >
+                  {fontOptions.map(font => (
+                    <option key={font.value} value={font.value}>{font.label}</option>
+                  ))}
+                </select>
+
+                <hr />
+
+                <h4><SlidersHorizontal size={18} /> شكل البطاقات</h4>
+
+                <label>استدارة زوايا البطاقات: {settings.theme?.cardRadius ?? 17}px</label>
+                <input
+                  style={inputStyle}
+                  type="range"
+                  min="5"
+                  max="30"
+                  value={settings.theme?.cardRadius ?? 17}
+                  onChange={e => updateTheme('cardRadius', Number(e.target.value))}
+                />
+
+                <label className="theme-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={settings.theme?.cardShadow !== false}
+                    onChange={e => updateTheme('cardShadow', e.target.checked)}
+                  />
+                  تفعيل الظلال للبطاقات
+                </label>
+
+                <div className="settings-actions">
+                  <button
+                    type="button"
+                    style={goldButton}
+                    onClick={() => saveSettings(settings)}
+                  >
+                    <Save size={17} />
+                    حفظ المظهر
+                  </button>
+
+                  <button
+                    type="button"
+                    style={primaryButton}
+                    onClick={resetTheme}
+                  >
+                    <RotateCcw size={16} />
+                    استعادة الافتراضي
+                  </button>
+                </div>
+              </div>
+
+              {/* الصور الرئيسية */}
+              <div style={{ ...cardStyle, marginBottom: 14 }}>
+                <h3><Image size={19} /> الصور الرئيسية</h3>
 
                 <p>شعار الأكاديمية</p>
-
-                <img
-                  src={settings.logo}
-                  alt="الشعار"
-                  style={{
-                    width: 100,
-                    height: 100,
-                    objectFit: 'contain'
-                  }}
-                />
+                <img src={settings.logo} alt="الشعار" className="settings-logo-preview" />
 
                 <input
                   style={inputStyle}
                   type="file"
                   accept=".jpg,.jpeg,image/jpeg"
-                  onChange={e => changeSettingImage(
-                    'logo',
-                    e.target.files[0]
-                  )}
+                  onChange={e => changeSettingImage('logo', e.target.files[0])}
                 />
 
                 <hr />
 
                 <p>صورة لاعب الأسبوع</p>
-
-                <img
-                  src={settings.playerOfWeek}
-                  alt="لاعب الأسبوع"
-                  style={{
-                    width: 130,
-                    height: 100,
-                    objectFit: 'cover'
-                  }}
-                />
+                <img src={settings.playerOfWeek} alt="لاعب الأسبوع" className="settings-honor-preview" />
 
                 <input
                   style={inputStyle}
                   type="file"
                   accept=".jpg,.jpeg,image/jpeg"
-                  onChange={e => changeSettingImage(
-                    'playerOfWeek',
-                    e.target.files[0]
-                  )}
+                  onChange={e => changeSettingImage('playerOfWeek', e.target.files[0])}
                 />
 
                 <input
                   style={inputStyle}
                   placeholder="اسم لاعب الأسبوع"
                   value={settings.playerOfWeekName}
-                  onChange={e => setSettings({
-                    ...settings,
-                    playerOfWeekName: e.target.value
-                  })}
+                  onChange={e => setSettings({ ...settings, playerOfWeekName: e.target.value })}
                 />
 
                 <textarea
                   style={inputStyle}
                   placeholder="وصف لاعب الأسبوع"
                   value={settings.playerOfWeekDescription}
-                  onChange={e => setSettings({
-                    ...settings,
-                    playerOfWeekDescription: e.target.value
-                  })}
+                  onChange={e => setSettings({ ...settings, playerOfWeekDescription: e.target.value })}
                 />
 
-                <button
-                  style={primaryButton}
-                  onClick={() => saveSettings(settings)}
-                >
+                <button style={primaryButton} onClick={() => saveSettings(settings)}>
                   <Save size={16} />
                   حفظ بيانات لاعب الأسبوع
                 </button>
               </div>
 
+              {/* إعدادات الصور */}
               <div style={{ ...cardStyle, marginBottom: 14 }}>
                 <h3>إعدادات الصور</h3>
 
                 <label>ارتفاع صورة الواجهة الرئيسية بالبكسل</label>
-
                 <input
                   style={inputStyle}
                   type="number"
                   min="180"
                   max="700"
                   value={settings.imageHeight}
-                  onChange={e => setSettings({
-                    ...settings,
-                    imageHeight: Number(e.target.value)
-                  })}
+                  onChange={e => setSettings({ ...settings, imageHeight: Number(e.target.value) })}
                 />
 
                 <label>ارتفاع صور اللاعبين بالبكسل</label>
-
                 <input
                   style={inputStyle}
                   type="number"
                   min="120"
                   max="500"
                   value={settings.playerImageHeight}
-                  onChange={e => setSettings({
-                    ...settings,
-                    playerImageHeight: Number(e.target.value)
-                  })}
+                  onChange={e => setSettings({ ...settings, playerImageHeight: Number(e.target.value) })}
                 />
 
-                <button
-                  style={primaryButton}
-                  onClick={() => saveSettings(settings)}
-                >
+                <button style={primaryButton} onClick={() => saveSettings(settings)}>
                   <Save size={16} />
                   حفظ أحجام الصور
                 </button>
               </div>
 
+              {/* شرائح الصفحة الرئيسية */}
               <div style={{ ...cardStyle, marginBottom: 14 }}>
                 <h3>شرائح الصفحة الرئيسية</h3>
 
                 {settings.slides.map((slide, index) => (
-                  <div
-                    key={index}
-                    style={{
-                      borderTop: '1px solid #eee',
-                      paddingTop: 12,
-                      marginTop: 12
-                    }}
-                  >
+                  <div key={index} className="slide-editor">
                     <h4>الشريحة {index + 1}</h4>
 
-                    <img
-                      src={slide.image}
-                      alt=""
-                      style={{
-                        width: '100%',
-                        maxHeight: 140,
-                        objectFit: 'cover',
-                        borderRadius: 8
-                      }}
-                    />
+                    <img src={slide.image} alt="" className="slide-preview" />
 
                     <input
                       style={inputStyle}
                       type="file"
                       accept=".jpg,.jpeg,image/jpeg"
-                      onChange={e => changeSlideImage(
-                        index,
-                        e.target.files[0]
-                      )}
+                      onChange={e => changeSlideImage(index, e.target.files[0])}
                     />
 
                     <input
@@ -2023,11 +1846,8 @@ export default function App() {
                       value={slide.title}
                       onChange={e => {
                         const slides = settings.slides.map((item, i) =>
-                          i === index
-                            ? { ...item, title: e.target.value }
-                            : item
+                          i === index ? { ...item, title: e.target.value } : item
                         );
-
                         setSettings({ ...settings, slides });
                       }}
                     />
@@ -2038,11 +1858,8 @@ export default function App() {
                       value={slide.subtitle}
                       onChange={e => {
                         const slides = settings.slides.map((item, i) =>
-                          i === index
-                            ? { ...item, subtitle: e.target.value }
-                            : item
+                          i === index ? { ...item, subtitle: e.target.value } : item
                         );
-
                         setSettings({ ...settings, slides });
                       }}
                     />
@@ -2058,9 +1875,7 @@ export default function App() {
 
                         setSettings({
                           ...settings,
-                          slides: settings.slides.filter(
-                            (_, i) => i !== index
-                          )
+                          slides: settings.slides.filter((_, i) => i !== index)
                         });
                       }}
                     >
@@ -2090,11 +1905,7 @@ export default function App() {
                 </button>
 
                 <button
-                  style={{
-                    ...primaryButton,
-                    marginTop: 12,
-                    width: '100%'
-                  }}
+                  style={{ ...primaryButton, marginTop: 12, width: '100%' }}
                   onClick={() => saveSettings(settings)}
                 >
                   <Save size={16} />
@@ -2103,39 +1914,23 @@ export default function App() {
               </div>
 
               {/* النسخ الاحتياطي */}
-
               <div style={{ ...cardStyle, marginBottom: 14 }}>
-                <h3>
-                  <Database size={20} />
-                  النسخ الاحتياطي
-                </h3>
+                <h3><Database size={20} /> النسخ الاحتياطي</h3>
 
                 <p>
-                  يمكنك تنزيل نسخة من بيانات اللاعبين والمواعيد والإشعارات
-                  وإعدادات الموقع.
+                  يمكنك تنزيل نسخة من بيانات اللاعبين والمواعيد والإشعارات وإعدادات الموقع.
                 </p>
 
                 <button
                   type="button"
-                  style={{
-                    ...goldButton,
-                    width: '100%',
-                    marginBottom: 12
-                  }}
+                  style={{ ...goldButton, width: '100%', marginBottom: 12 }}
                   onClick={exportBackup}
                 >
                   <Download size={18} />
                   تنزيل نسخة احتياطية
                 </button>
 
-                <label style={{
-                  display: 'block',
-                  fontWeight: 700,
-                  marginBottom: 8
-                }}>
-                  استعادة نسخة احتياطية JSON
-                </label>
-
+                <label>استعادة نسخة احتياطية JSON</label>
                 <input
                   style={inputStyle}
                   type="file"
@@ -2147,18 +1942,15 @@ export default function App() {
                   }}
                 />
 
-                <small style={{ color: '#777', lineHeight: 1.8 }}>
-                  الاستعادة تدمج السجلات مع البيانات الحالية ولا تحذف
-                  السجلات الموجودة. ملفات الصور نفسها لا تدخل في النسخة
-                  الاحتياطية، وإنما تُحفظ روابطها.
+                <small>
+                  الاستعادة تدمج السجلات مع البيانات الحالية ولا تحذف السجلات الموجودة.
+                  ملفات الصور نفسها لا تدخل في النسخة الاحتياطية، وإنما تُحفظ روابطها.
                 </small>
               </div>
 
+              {/* إدارة الإشعارات */}
               <div style={cardStyle}>
-                <h3>
-                  <Bell size={19} />
-                  إدارة الإشعارات
-                </h3>
+                <h3><Bell size={19} /> إدارة الإشعارات</h3>
 
                 <button
                   style={primaryButton}
@@ -2172,20 +1964,11 @@ export default function App() {
                 </button>
 
                 {notifications.map(item => (
-                  <div
-                    key={item.id}
-                    style={{
-                      borderTop: '1px solid #eee',
-                      padding: 10
-                    }}
-                  >
+                  <div key={item.id} className="notification-admin-item">
                     <strong>{item.title}</strong>
                     <p>{item.body}</p>
 
-                    <button
-                      className="delete-btn"
-                      onClick={() => deleteNotification(item.id)}
-                    >
+                    <button className="delete-btn" onClick={() => deleteNotification(item.id)}>
                       <Trash2 size={15} />
                       حذف
                     </button>
@@ -2198,7 +1981,6 @@ export default function App() {
       </AnimatePresence>
 
       {/* نافذة الإشعارات */}
-
       <AnimatePresence>
         {showNotifications && (
           <div style={modalBackdrop}>
@@ -2206,35 +1988,20 @@ export default function App() {
               className="modal"
               initial={{ scale: .9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              style={{
-                maxHeight: '90vh',
-                overflowY: 'auto',
-                position: 'relative'
-              }}
             >
-              <button
-                className="close-btn"
-                onClick={() => setShowNotifications(false)}
-              >
+              <button className="close-btn" onClick={() => setShowNotifications(false)}>
                 <X />
               </button>
 
-              <h2>
-                <Bell size={22} />
-                إشعارات الأكاديمية
-              </h2>
+              <h2><Bell size={22} /> إشعارات الأكاديمية</h2>
 
               {notifications.length === 0 ? (
                 <p>لا توجد إشعارات جديدة.</p>
               ) : (
                 notifications.map(item => (
-                  <div
-                    key={item.id}
-                    style={{ ...cardStyle, marginBottom: 10 }}
-                  >
+                  <div key={item.id} style={{ ...cardStyle, marginBottom: 10 }}>
                     <h3>{item.title}</h3>
                     <p>{item.body}</p>
-
                     <small>
                       {item.created_at
                         ? new Date(item.created_at).toLocaleDateString('ar')
@@ -2244,17 +2011,13 @@ export default function App() {
                 ))
               )}
 
-              <button
-                className="submit-btn"
-                onClick={() => setShowNotifications(false)}
-              >
+              <button className="submit-btn" onClick={() => setShowNotifications(false)}>
                 إغلاق
               </button>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
-
     </div>
   );
-      }
+                  }
