@@ -11,9 +11,15 @@ import {
   RotateCcw, Type, SlidersHorizontal
 } from 'lucide-react';
 
-const supabaseUrl = 'https://gyvxvomagibbamhvfwbn.supabase.co';
+// إعداد الاتصال بـ Supabase عبر متغيرات Vercel
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6Imd5dnh2b21hZ2liYmFtaHZ3Ym4iLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc5NDE4Mzk4NywiZXhwIjoyMTA5NzU5OTk5fQ.fxg8h2IgRR3NcE9mY9piACg1feH7U_UMHeadjsfFjGQ';
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error(
+    'إعدادات Supabase غير موجودة. تحقق من متغيرات البيئة في Vercel.'
+  );
+}
 
 const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
@@ -174,8 +180,13 @@ export default function App() {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);
 
+  // كلمة المرور المستخدمة في استعادة الحساب
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
+
+  // حالات مستقلة لتغيير كلمة المرور من لوحة التحكم
+  const [settingsNewPassword, setSettingsNewPassword] = useState('');
+  const [settingsConfirmPassword, setSettingsConfirmPassword] = useState('');
 
   const [showPlayerForm, setShowPlayerForm] = useState(false);
   const [showScheduleForm, setShowScheduleForm] = useState(false);
@@ -572,7 +583,7 @@ export default function App() {
     }
   }
 
-  // تعيين كلمة مرور جديدة
+  // تعيين كلمة مرور جديدة عبر رابط الاستعادة
   async function updateAdminPassword(e) {
     e.preventDefault();
 
@@ -612,6 +623,45 @@ export default function App() {
     }
   }
 
+  // تغيير كلمة مرور الإدارة من لوحة التحكم
+  async function changeAdminPassword(e) {
+    e.preventDefault();
+
+    if (!isAdmin || !hasEntered) {
+      alert('يجب تسجيل الدخول إلى الإدارة أولاً.');
+      return;
+    }
+
+    if (settingsNewPassword.length < 8) {
+      alert('يجب أن تتكون كلمة المرور من 8 أحرف على الأقل.');
+      return;
+    }
+
+    if (settingsNewPassword !== settingsConfirmPassword) {
+      alert('كلمتا المرور غير متطابقتين.');
+      return;
+    }
+
+    setPinLoading(true);
+
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: settingsNewPassword
+      });
+
+      if (error) throw error;
+
+      setSettingsNewPassword('');
+      setSettingsConfirmPassword('');
+
+      alert('تم تغيير كلمة مرور الإدارة بنجاح.');
+    } catch (err) {
+      alert('تعذر تغيير كلمة المرور: ' + err.message);
+    } finally {
+      setPinLoading(false);
+    }
+  }
+
   async function logout() {
     await supabase.auth.signOut();
 
@@ -621,6 +671,8 @@ export default function App() {
     setPin('');
     setNewPin('');
     setConfirmPin('');
+    setSettingsNewPassword('');
+    setSettingsConfirmPassword('');
     setActiveTab('home');
   }
 
@@ -2198,6 +2250,53 @@ export default function App() {
                   >
                     <Lock size={16} />
                     {pinLoading ? 'جارٍ التغيير...' : 'تغيير رمز PIN'}
+                  </button>
+                </form>
+              </div>
+
+              {/* تغيير كلمة مرور الإدارة */}
+              <div style={{ ...cardStyle, marginBottom: 14 }}>
+                <h3>
+                  <Lock size={20} />
+                  تغيير كلمة مرور الإدارة
+                </h3>
+
+                <p>
+                  يمكنك تغيير كلمة مرور حساب الإدارة من هنا دون تغيير رمز PIN.
+                </p>
+
+                <form onSubmit={changeAdminPassword}>
+                  <input
+                    style={inputStyle}
+                    type="password"
+                    placeholder="كلمة المرور الجديدة"
+                    value={settingsNewPassword}
+                    onChange={e => setSettingsNewPassword(e.target.value)}
+                    minLength={8}
+                    autoComplete="new-password"
+                    required
+                  />
+
+                  <input
+                    style={inputStyle}
+                    type="password"
+                    placeholder="تأكيد كلمة المرور الجديدة"
+                    value={settingsConfirmPassword}
+                    onChange={e => setSettingsConfirmPassword(e.target.value)}
+                    minLength={8}
+                    autoComplete="new-password"
+                    required
+                  />
+
+                  <button
+                    type="submit"
+                    style={goldButton}
+                    disabled={pinLoading}
+                  >
+                    <Save size={16} />
+                    {pinLoading
+                      ? 'جارٍ تغيير كلمة المرور...'
+                      : 'حفظ كلمة المرور الجديدة'}
                   </button>
                 </form>
               </div>
