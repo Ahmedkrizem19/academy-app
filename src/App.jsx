@@ -15,7 +15,13 @@ const supabaseUrl = 'https://gyvxvomagibbamhvfwbn.supabase.co';
 
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6Imd5dnh2b21hZ2liYmFtaHZ3Ym4iLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc5NDE4Mzk4NywiZXhwIjoyMTA5NzU5OTk5fQ.fxg8h2IgRR3NcE9mY9piACg1feH7U_UMHeadjsfFjGQ';
 
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true
+  }
+});
 
 const ADMIN_UID = 'd3ce2ae4-6736-4782-ae55-5f9359effd8a';
 
@@ -158,7 +164,19 @@ export default function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [hasEntered, setHasEntered] = useState(false);
 
+  const [authStep, setAuthStep] = useState('');
+  const [pin, setPin] = useState('');
+  const [newPin, setNewPin] = useState('');
+  const [confirmPin, setConfirmPin] = useState('');
+  const [pinLoading, setPinLoading] = useState(false);
+
   const [showLogin, setShowLogin] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
+
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+
   const [showPlayerForm, setShowPlayerForm] = useState(false);
   const [showScheduleForm, setShowScheduleForm] = useState(false);
   const [showNotificationForm, setShowNotificationForm] = useState(false);
@@ -202,7 +220,7 @@ export default function App() {
     is_published: true
   });
 
-  // تطبيق إعدادات المظهر على الموقع
+  // تطبيق إعدادات المظهر
   useEffect(() => {
     const theme = normalizeTheme(settings.theme);
     const root = document.documentElement;
@@ -217,11 +235,10 @@ export default function App() {
     root.style.setProperty('--card', theme.card);
     root.style.setProperty('--text', theme.white);
     root.style.setProperty('--card-radius', `${theme.cardRadius}px`);
+
     root.style.setProperty(
       '--card-shadow',
-      theme.cardShadow
-        ? '0 8px 25px rgba(0,0,0,.16)'
-        : 'none'
+      theme.cardShadow ? '0 8px 25px rgba(0,0,0,.16)' : 'none'
     );
 
     root.style.setProperty(
@@ -230,24 +247,72 @@ export default function App() {
     );
   }, [settings.theme]);
 
+  // التحقق من جلسة الإدارة عند فتح الموقع
   useEffect(() => {
+    let mounted = true;
+
     loadAll();
 
-    supabase.auth.getSession().then(({ data }) => {
-      const session = data.session;
+    async function prepareAdminGate(session) {
       const admin = session?.user?.id === ADMIN_UID;
 
-      setIsAdmin(!!admin);
-      setHasEntered(!!admin);
+      if (!admin) {
+        if (mounted) {
+          setIsAdmin(false);
+          setHasEntered(false);
+          setAuthStep('');
+        }
+        return;
+      }
+
+      if (mounted) {
+        setIsAdmin(true);
+        setHasEntered(false);
+      }
+
+      const { data, error } = await supabase.rpc('has_admin_pin');
+
+      if (!mounted) return;
+
+      if (error) {
+        setAuthStep('');
+        alert('تعذر التحقق من إعدادات PIN: ' + error.message);
+        return;
+      }
+
+      setAuthStep(data === true ? 'verify' : 'setup');
+    }
+
+    supabase.auth.getSession().then(({ data, error }) => {
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      prepareAdminGate(data.session);
     });
 
     const { data: listener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (event, session) => {
+        if (event === 'PASSWORD_RECOVERY') {
+          setIsAdmin(true);
+          setHasEntered(false);
+          setAuthStep('');
+          setShowLogin(false);
+          setShowForgotPassword(false);
+          setShowResetPassword(true);
+          return;
+        }
+
         const admin = session?.user?.id === ADMIN_UID;
 
-        setIsAdmin(!!admin);
-
-        if (!admin) {
+        if (event === 'SIGNED_OUT' || !admin) {
+          setIsAdmin(false);
+          setHasEntered(false);
+          setAuthStep('');
+          setPin('');
+        } else if (event === 'SIGNED_IN') {
+          setIsAdmin(true);
           setHasEntered(false);
         }
       }
@@ -261,11 +326,13 @@ export default function App() {
     window.addEventListener('beforeinstallprompt', installHandler);
 
     return () => {
+      mounted = false;
       listener.subscription.unsubscribe();
       window.removeEventListener('beforeinstallprompt', installHandler);
     };
   }, []);
 
+  // تغيير الشرائح تلقائيًا
   useEffect(() => {
     if (settings.slides?.length > 1) {
       const timer = setInterval(() => {
@@ -319,46 +386,245 @@ export default function App() {
     setLoading(false);
   }
 
-  function enterAsVisitor() {
+  // الدخول كزائر
+  async function enterAsVisitor() {
+    if (isAdmin) {
+      await supabase.auth.signOut();
+    }
+
     setIsAdmin(false);
     setHasEntered(true);
+    setAuthStep('');
+    setPin('');
   }
 
+  // تسجيل دخول الإدارة
   async function login(e) {
     e.preventDefault();
+    setPinLoading(true);
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    });
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
 
-    if (error) {
-      alert('تعذر تسجيل الدخول: ' + error.message);
+      if (error) throw error;
+
+      if (data.user?.id !== ADMIN_UID) {
+        await supabase.auth.signOut();
+        alert('هذا الحساب غير مخوّل لدخول لوحة الإدارة.');
+        return;
+      }
+
+      setIsAdmin(true);
+      setHasEntered(false);
+      setShowLogin(false);
+
+      setEmail('');
+      setPassword('');
+
+      const { data: pinExists, error: pinError } =
+        await supabase.rpc('has_admin_pin');
+
+      if (pinError) throw pinError;
+
+      setAuthStep(pinExists === true ? 'verify' : 'setup');
+    } catch (err) {
+      alert('تعذر تسجيل الدخول: ' + err.message);
+    } finally {
+      setPinLoading(false);
+    }
+  }
+
+  // التحقق من PIN
+  async function verifyPin(e) {
+    e.preventDefault();
+
+    if (!/^\d{4}$/.test(pin)) {
+      alert('يجب إدخال رمز PIN مكون من أربعة أرقام.');
       return;
     }
 
-    if (data.user?.id !== ADMIN_UID) {
+    setPinLoading(true);
+
+    try {
+      const { data, error } = await supabase.rpc('verify_admin_pin', {
+        p_pin: pin
+      });
+
+      if (error) throw error;
+
+      if (data !== true) {
+        alert('رمز PIN غير صحيح أو تم قفل المحاولة مؤقتًا.');
+        setPin('');
+        return;
+      }
+
+      setHasEntered(true);
+      setIsAdmin(true);
+      setAuthStep('');
+      setPin('');
+
+      alert('تم التحقق بنجاح.');
+    } catch (err) {
+      alert('تعذر التحقق من PIN: ' + err.message);
+    } finally {
+      setPinLoading(false);
+    }
+  }
+
+  // إعداد PIN لأول مرة
+  async function setupPin(e) {
+    e.preventDefault();
+
+    if (!/^\d{4}$/.test(newPin)) {
+      alert('يجب أن يتكون PIN من أربعة أرقام.');
+      return;
+    }
+
+    if (newPin !== confirmPin) {
+      alert('رمزا PIN غير متطابقين.');
+      return;
+    }
+
+    setPinLoading(true);
+
+    try {
+      const { error } = await supabase.rpc('set_admin_pin', {
+        p_pin: newPin
+      });
+
+      if (error) throw error;
+
+      setHasEntered(true);
+      setIsAdmin(true);
+      setAuthStep('');
+      setNewPin('');
+      setConfirmPin('');
+
+      alert('تم إعداد رمز PIN بنجاح.');
+    } catch (err) {
+      alert('تعذر إعداد PIN: ' + err.message);
+    } finally {
+      setPinLoading(false);
+    }
+  }
+
+  // تغيير PIN من الإعدادات
+  async function changeAdminPin(e) {
+    e.preventDefault();
+
+    if (!/^\d{4}$/.test(newPin)) {
+      alert('يجب أن يتكون PIN من أربعة أرقام.');
+      return;
+    }
+
+    if (newPin !== confirmPin) {
+      alert('رمزا PIN غير متطابقين.');
+      return;
+    }
+
+    setPinLoading(true);
+
+    try {
+      const { error } = await supabase.rpc('set_admin_pin', {
+        p_pin: newPin
+      });
+
+      if (error) throw error;
+
+      setNewPin('');
+      setConfirmPin('');
+
+      alert('تم تغيير رمز PIN بنجاح.');
+    } catch (err) {
+      alert('تعذر تغيير PIN: ' + err.message);
+    } finally {
+      setPinLoading(false);
+    }
+  }
+
+  // طلب استعادة كلمة المرور
+  async function sendPasswordReset(e) {
+    e.preventDefault();
+
+    if (!email.trim()) {
+      alert('يرجى إدخال البريد الإلكتروني.');
+      return;
+    }
+
+    setPinLoading(true);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin
+      });
+
+      if (error) throw error;
+
+      alert('تم إرسال رابط استعادة كلمة المرور إلى بريدك الإلكتروني.');
+      setShowForgotPassword(false);
+    } catch (err) {
+      alert('تعذر إرسال رابط الاستعادة: ' + err.message);
+    } finally {
+      setPinLoading(false);
+    }
+  }
+
+  // تعيين كلمة مرور جديدة
+  async function updateAdminPassword(e) {
+    e.preventDefault();
+
+    if (newPassword.length < 8) {
+      alert('يجب أن تتكون كلمة المرور من 8 أحرف على الأقل.');
+      return;
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      alert('كلمتا المرور غير متطابقتين.');
+      return;
+    }
+
+    setPinLoading(true);
+
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) throw error;
+
       await supabase.auth.signOut();
-      alert('هذا الحساب غير مخوّل لدخول لوحة الإدارة.');
-      return;
+
+      setIsAdmin(false);
+      setHasEntered(false);
+      setAuthStep('');
+      setShowResetPassword(false);
+      setNewPassword('');
+      setConfirmNewPassword('');
+
+      alert('تم تغيير كلمة المرور بنجاح. يمكنك تسجيل الدخول الآن.');
+    } catch (err) {
+      alert('تعذر تغيير كلمة المرور: ' + err.message);
+    } finally {
+      setPinLoading(false);
     }
-
-    setIsAdmin(true);
-    setHasEntered(true);
-    setShowLogin(false);
-    setEmail('');
-    setPassword('');
-
-    alert('تم تسجيل الدخول بنجاح');
   }
 
   async function logout() {
     await supabase.auth.signOut();
+
     setIsAdmin(false);
     setHasEntered(false);
+    setAuthStep('');
+    setPin('');
+    setNewPin('');
+    setConfirmPin('');
     setActiveTab('home');
   }
 
+  // رفع الصور
   async function uploadImage(file) {
     if (!file) return null;
 
@@ -395,7 +661,7 @@ export default function App() {
   }
 
   async function saveSettings(updatedSettings) {
-    if (!isAdmin) return false;
+    if (!isAdmin || !hasEntered) return false;
 
     const safeSettings = {
       ...updatedSettings,
@@ -485,7 +751,6 @@ export default function App() {
 
   async function savePlayer(e) {
     e.preventDefault();
-
     if (!isAdmin) return;
 
     if (!playerForm.name.trim()) {
@@ -824,6 +1089,7 @@ export default function App() {
     { id: 'honor', label: 'لاعب الأسبوع', icon: Trophy }
   ];
 
+  // شاشة البداية وتسجيل الدخول والتحقق
   if (!hasEntered) {
     return (
       <div className="academy" dir="rtl">
@@ -851,38 +1117,49 @@ export default function App() {
 
             <p>رعاية المواهب وصناعة الأبطال</p>
 
-            <div className="welcome-buttons">
-              <motion.button
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: .97 }}
-                onClick={enterAsVisitor}
-                style={{ ...goldButton, padding: 16, fontSize: 17 }}
-              >
-                <Eye size={21} />
-                الدخول كزائر
-              </motion.button>
+            {!isAdmin && (
+              <div className="welcome-buttons">
+                <motion.button
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: .97 }}
+                  onClick={enterAsVisitor}
+                  style={{ ...goldButton, padding: 16, fontSize: 17 }}
+                >
+                  <Eye size={21} />
+                  الدخول كزائر
+                </motion.button>
 
-              <motion.button
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: .97 }}
-                onClick={() => setShowLogin(true)}
-                style={{
-                  ...primaryButton,
-                  background: 'transparent',
-                  border: '1px solid var(--gold)',
-                  padding: 15,
-                  fontSize: 16
-                }}
-              >
-                <Shield size={20} />
-                دخول الإدارة
-              </motion.button>
-            </div>
+                <motion.button
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: .97 }}
+                  onClick={() => setShowLogin(true)}
+                  style={{
+                    ...primaryButton,
+                    background: 'transparent',
+                    border: '1px solid var(--gold)',
+                    padding: 15,
+                    fontSize: 16
+                  }}
+                >
+                  <Shield size={20} />
+                  دخول الإدارة
+                </motion.button>
+              </div>
+            )}
+
+            {isAdmin && authStep === 'verify' && (
+              <p>يرجى إدخال رمز PIN للمتابعة إلى لوحة الإدارة.</p>
+            )}
+
+            {isAdmin && authStep === 'setup' && (
+              <p>هذه أول مرة تدخل فيها الإدارة. أنشئ رمز PIN لحماية حسابك.</p>
+            )}
 
             <small>معًا نصنع المستقبل</small>
           </motion.div>
         </div>
 
+        {/* تسجيل دخول الإدارة */}
         <AnimatePresence>
           {showLogin && (
             <div style={modalBackdrop}>
@@ -923,8 +1200,228 @@ export default function App() {
                   required
                 />
 
-                <button type="submit" className="submit-btn" style={{ width: '100%' }}>
-                  تسجيل الدخول
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowLogin(false);
+                    setShowForgotPassword(true);
+                  }}
+                  style={{
+                    background: 'transparent',
+                    border: 0,
+                    color: 'var(--gold)',
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
+                    marginBottom: 12
+                  }}
+                >
+                  نسيت كلمة المرور؟
+                </button>
+
+                <button
+                  type="submit"
+                  className="submit-btn"
+                  style={{ width: '100%' }}
+                  disabled={pinLoading}
+                >
+                  {pinLoading ? 'جارٍ تسجيل الدخول...' : 'تسجيل الدخول'}
+                </button>
+              </motion.form>
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* إعداد أو التحقق من PIN */}
+        <AnimatePresence>
+          {isAdmin && !hasEntered &&
+            (authStep === 'setup' || authStep === 'verify') && (
+            <div style={modalBackdrop}>
+              <motion.form
+                className="modal"
+                onSubmit={authStep === 'setup' ? setupPin : verifyPin}
+                initial={{ scale: .9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: .9, opacity: 0 }}
+                style={{ width: '100%', maxWidth: 420 }}
+              >
+                <Lock size={38} style={{ color: 'var(--gold)' }} />
+
+                <h2>
+                  {authStep === 'setup' ? 'إعداد رمز PIN' : 'التحقق من رمز PIN'}
+                </h2>
+
+                <p>
+                  {authStep === 'setup'
+                    ? 'أنشئ رمزًا سريًا مكونًا من أربعة أرقام لحماية لوحة الإدارة.'
+                    : 'أدخل رمز PIN الخاص بك للمتابعة إلى لوحة الإدارة.'}
+                </p>
+
+                {authStep === 'setup' ? (
+                  <>
+                    <input
+                      style={inputStyle}
+                      type="password"
+                      inputMode="numeric"
+                      pattern="[0-9]{4}"
+                      maxLength={4}
+                      placeholder="رمز PIN الجديد"
+                      value={newPin}
+                      onChange={e =>
+                        setNewPin(e.target.value.replace(/\D/g, '').slice(0, 4))
+                      }
+                      required
+                    />
+
+                    <input
+                      style={inputStyle}
+                      type="password"
+                      inputMode="numeric"
+                      pattern="[0-9]{4}"
+                      maxLength={4}
+                      placeholder="تأكيد رمز PIN"
+                      value={confirmPin}
+                      onChange={e =>
+                        setConfirmPin(e.target.value.replace(/\D/g, '').slice(0, 4))
+                      }
+                      required
+                    />
+                  </>
+                ) : (
+                  <input
+                    style={{
+                      ...inputStyle,
+                      textAlign: 'center',
+                      letterSpacing: 12,
+                      fontSize: 24
+                    }}
+                    type="password"
+                    inputMode="numeric"
+                    pattern="[0-9]{4}"
+                    maxLength={4}
+                    placeholder="••••"
+                    value={pin}
+                    onChange={e =>
+                      setPin(e.target.value.replace(/\D/g, '').slice(0, 4))
+                    }
+                    required
+                  />
+                )}
+
+                <button
+                  type="submit"
+                  className="submit-btn"
+                  style={{ width: '100%' }}
+                  disabled={pinLoading}
+                >
+                  {pinLoading
+                    ? 'يرجى الانتظار...'
+                    : authStep === 'setup'
+                      ? 'حفظ رمز PIN'
+                      : 'تحقق ودخول'}
+                </button>
+
+                <button
+                  type="button"
+                  style={{ ...primaryButton, width: '100%', marginTop: 10 }}
+                  onClick={logout}
+                >
+                  إلغاء وتسجيل الخروج
+                </button>
+              </motion.form>
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* استعادة كلمة المرور */}
+        <AnimatePresence>
+          {showForgotPassword && (
+            <div style={modalBackdrop}>
+              <motion.form
+                className="modal"
+                onSubmit={sendPasswordReset}
+                initial={{ opacity: 0, scale: .9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: .9 }}
+                style={{ width: '100%', maxWidth: 420 }}
+              >
+                <button
+                  type="button"
+                  className="close-btn"
+                  onClick={() => setShowForgotPassword(false)}
+                >
+                  <X />
+                </button>
+
+                <Lock size={35} style={{ color: 'var(--gold)' }} />
+                <h2>استعادة كلمة المرور</h2>
+
+                <p>أدخل بريد الإدارة لإرسال رابط إعادة تعيين كلمة المرور.</p>
+
+                <input
+                  style={inputStyle}
+                  type="email"
+                  placeholder="البريد الإلكتروني"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  required
+                />
+
+                <button
+                  type="submit"
+                  className="submit-btn"
+                  style={{ width: '100%' }}
+                  disabled={pinLoading}
+                >
+                  {pinLoading ? 'جارٍ الإرسال...' : 'إرسال رابط الاستعادة'}
+                </button>
+              </motion.form>
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* تعيين كلمة مرور جديدة */}
+        <AnimatePresence>
+          {showResetPassword && (
+            <div style={modalBackdrop}>
+              <motion.form
+                className="modal"
+                onSubmit={updateAdminPassword}
+                initial={{ opacity: 0, scale: .9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: .9 }}
+                style={{ width: '100%', maxWidth: 420 }}
+              >
+                <Lock size={35} style={{ color: 'var(--gold)' }} />
+
+                <h2>تعيين كلمة مرور جديدة</h2>
+
+                <input
+                  style={inputStyle}
+                  type="password"
+                  placeholder="كلمة المرور الجديدة"
+                  value={newPassword}
+                  onChange={e => setNewPassword(e.target.value)}
+                  minLength={8}
+                  required
+                />
+
+                <input
+                  style={inputStyle}
+                  type="password"
+                  placeholder="تأكيد كلمة المرور"
+                  value={confirmNewPassword}
+                  onChange={e => setConfirmNewPassword(e.target.value)}
+                  minLength={8}
+                  required
+                />
+
+                <button
+                  type="submit"
+                  className="submit-btn"
+                  style={{ width: '100%' }}
+                  disabled={pinLoading}
+                >
+                  {pinLoading ? 'جارٍ الحفظ...' : 'حفظ كلمة المرور الجديدة'}
                 </button>
               </motion.form>
             </div>
@@ -1656,7 +2153,56 @@ export default function App() {
                 لوحة تحكم الأكاديمية
               </h2>
 
-              {/* إعدادات المظهر الجديدة */}
+              {/* حماية لوحة الإدارة */}
+              <div style={{ ...cardStyle, marginBottom: 14 }}>
+                <h3>
+                  <Shield size={20} />
+                  حماية لوحة الإدارة
+                </h3>
+
+                <p>يمكنك تغيير رمز PIN المستخدم لحماية لوحة الإدارة.</p>
+
+                <form onSubmit={changeAdminPin}>
+                  <input
+                    style={inputStyle}
+                    type="password"
+                    inputMode="numeric"
+                    pattern="[0-9]{4}"
+                    maxLength={4}
+                    placeholder="رمز PIN الجديد"
+                    value={newPin}
+                    onChange={e =>
+                      setNewPin(e.target.value.replace(/\D/g, '').slice(0, 4))
+                    }
+                    required
+                  />
+
+                  <input
+                    style={inputStyle}
+                    type="password"
+                    inputMode="numeric"
+                    pattern="[0-9]{4}"
+                    maxLength={4}
+                    placeholder="تأكيد رمز PIN الجديد"
+                    value={confirmPin}
+                    onChange={e =>
+                      setConfirmPin(e.target.value.replace(/\D/g, '').slice(0, 4))
+                    }
+                    required
+                  />
+
+                  <button
+                    type="submit"
+                    style={goldButton}
+                    disabled={pinLoading}
+                  >
+                    <Lock size={16} />
+                    {pinLoading ? 'جارٍ التغيير...' : 'تغيير رمز PIN'}
+                  </button>
+                </form>
+              </div>
+
+              {/* إعدادات المظهر */}
               <div style={{ ...cardStyle, marginBottom: 14 }}>
                 <h3><Palette size={20} /> تخصيص مظهر الموقع</h3>
                 <p>غيّر ألوان الموقع والخطوط وشكل البطاقات، ثم احفظ التعديلات.</p>
@@ -1787,7 +2333,11 @@ export default function App() {
                   onChange={e => setSettings({ ...settings, playerOfWeekDescription: e.target.value })}
                 />
 
-                <button style={primaryButton} onClick={() => saveSettings(settings)}>
+                <button
+                  type="button"
+                  style={primaryButton}
+                  onClick={() => saveSettings(settings)}
+                >
                   <Save size={16} />
                   حفظ بيانات لاعب الأسبوع
                 </button>
@@ -1817,7 +2367,11 @@ export default function App() {
                   onChange={e => setSettings({ ...settings, playerImageHeight: Number(e.target.value) })}
                 />
 
-                <button style={primaryButton} onClick={() => saveSettings(settings)}>
+                <button
+                  type="button"
+                  style={primaryButton}
+                  onClick={() => saveSettings(settings)}
+                >
                   <Save size={16} />
                   حفظ أحجام الصور
                 </button>
@@ -1905,6 +2459,7 @@ export default function App() {
                 </button>
 
                 <button
+                  type="button"
                   style={{ ...primaryButton, marginTop: 12, width: '100%' }}
                   onClick={() => saveSettings(settings)}
                 >
@@ -1953,6 +2508,7 @@ export default function App() {
                 <h3><Bell size={19} /> إدارة الإشعارات</h3>
 
                 <button
+                  type="button"
                   style={primaryButton}
                   onClick={() => {
                     setShowSettings(false);
@@ -2020,4 +2576,4 @@ export default function App() {
       </AnimatePresence>
     </div>
   );
-                  }
+  }
