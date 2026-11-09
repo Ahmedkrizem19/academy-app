@@ -1,195 +1,624 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Trophy, Users, Calendar, Shield, Search, Plus, Trash2, 
-  CheckCircle, XCircle, LogOut, Lock, Download, ChevronLeft, Award, Clock
+import {
+  Trophy, Users, Calendar, Shield, Search, Plus,
+  Trash2, LogOut, Lock, Award, Clock,
+  X, RefreshCw, UserCircle, Menu
 } from 'lucide-react';
 
-// إعداد اتصال Supabase بالمفاتيح الصحيحة والمحدثة
-const supabaseUrl = 'https://kenstwnoudkduzmpjthd.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlbnN0d25vdWRrZHV6bXBqdGhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQxNTYwNzYsImV4cCI6MjEwOTczMjA3Nn0.Kw2kslNrSwz0IXLaBmgE8MGSF7lkrXfh3IKYsOkyeeU';
+const supabaseUrl = 'https://gyvxvomagibbamhvfwbn.supabase.co';
+
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd5dnh2b21hZ2liYmFtaHZmd2JuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQxODM5ODcsImV4cCI6MjEwOTc1OTk4N30.fxg8h2IgRR3NcE9mY9piACg1feH7U_UMHeadjsfFjGQ';
+
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('players');
   const [players, setPlayers] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedPosition, setSelectedPosition] = useState('all');
-  
-  // حالة نافذة إضافة لاعب جديد أو الإدارة
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [adminPassword, setAdminPassword] = useState('');
-  const [showAdminLogin, setShowAdminLogin] = useState(false);
-  const [newPlayer, setNewPlayer] = useState({ name: '', position: 'هجوم', age: 12, pace: 80, skill: 85 });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  // جلب اللاعبين من قاعدة بيانات Supabase عند فتح التطبيق
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
+  const [showAdd, setShowAdd] = useState(false);
+
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const [search, setSearch] = useState('');
+  const [position, setPosition] = useState('الكل');
+
+  const [newPlayer, setNewPlayer] = useState({
+    name: '',
+    position: 'هجوم',
+    age: '',
+    pace: 80,
+    skill: 85,
+    photo: ''
+  });
+
+  const [activeTab, setActiveTab] = useState('players');
+
   useEffect(() => {
-    fetchPlayers();
+    loadPlayers();
+
+    supabase.auth.getSession().then(({ data }) => {
+      setIsAdmin(!!data.session);
+    });
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setIsAdmin(!!session);
+      }
+    );
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
   }, []);
 
-  async function fetchPlayers() {
-    const { data, error } = await supabase.from('players').select('*');
-    if (error) {
-      console.error('خطأ في جلب اللاعبين:', error);
-    } else if (data) {
-      setPlayers(data);
-    }
-  }
-
-  // إضافة لاعب جديد إلى قاعدة البيانات
-  async function handleAddPlayer(e) {
-    e.preventDefault();
-    if (!newPlayer.name) return;
+  async function loadPlayers() {
+    setLoading(true);
+    setError('');
 
     const { data, error } = await supabase
       .from('players')
-      .insert([newPlayer])
+      .select('*')
+      .order('name', { ascending: true });
+
+    if (error) {
+      setError(error.message);
+    } else {
+      setPlayers(data || []);
+    }
+
+    setLoading(false);
+  }
+
+  async function login(e) {
+    e.preventDefault();
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+
+    if (error) {
+      alert('تعذر تسجيل الدخول: ' + error.message);
+      return;
+    }
+
+    setShowLogin(false);
+    setEmail('');
+    setPassword('');
+    alert('تم تسجيل دخول الإدارة بنجاح');
+  }
+
+  async function logout() {
+    await supabase.auth.signOut();
+    setIsAdmin(false);
+  }
+
+  async function addPlayer(e) {
+    e.preventDefault();
+
+    if (!newPlayer.name.trim()) {
+      alert('يرجى كتابة اسم اللاعب');
+      return;
+    }
+
+    const playerData = {
+      name: newPlayer.name.trim(),
+      position: newPlayer.position,
+      age: newPlayer.age ? Number(newPlayer.age) : null,
+      pace: Number(newPlayer.pace),
+      skill: Number(newPlayer.skill),
+      photo: newPlayer.photo.trim() || null
+    };
+
+    const { data, error } = await supabase
+      .from('players')
+      .insert([playerData])
       .select();
 
     if (error) {
-      console.error('خطأ في إضافة اللاعب:', error);
-      alert('حدث خطأ أثناء الإضافة: ' + error.message);
-    } else if (data) {
-      setPlayers([...players, ...data]);
-      setNewPlayer({ name: '', position: 'هجوم', age: 12, pace: 80, skill: 85 });
-      alert('تم إضافة اللاعب بنجاح إلى السحابة!');
+      alert('حدث خطأ أثناء إضافة اللاعب: ' + error.message);
+      return;
     }
+
+    setPlayers(previous => [...previous, ...data]);
+
+    setNewPlayer({
+      name: '',
+      position: 'هجوم',
+      age: '',
+      pace: 80,
+      skill: 85,
+      photo: ''
+    });
+
+    setShowAdd(false);
+    alert('تمت إضافة اللاعب بنجاح لجميع زوار الموقع');
   }
 
-  // حذف لاعب من قاعدة البيانات
-  async function handleDeletePlayer(id) {
-    const { error } = await supabase.from('players').delete().eq('id', id);
+  async function deletePlayer(id) {
+    if (!window.confirm('هل أنت متأكد من حذف هذا اللاعب؟')) {
+      return;
+    }
+
+    const { error } = await supabase
+      .from('players')
+      .delete()
+      .eq('id', id);
+
     if (error) {
-      console.error('خطأ في الحذف:', error);
-    } else {
-      setPlayers(players.filter(p => p.id !== id));
+      alert('تعذر حذف اللاعب: ' + error.message);
+      return;
     }
+
+    setPlayers(previous => previous.filter(player => player.id !== id));
   }
 
-  // تسجيل دخول المدير
-  function handleAdminLogin(e) {
-    e.preventDefault();
-    if (adminPassword === 'admin2026') {
-      setIsAdmin(true);
-      setShowAdminLogin(false);
-      setAdminPassword('');
-    } else {
-      alert('كلمة المرور غير صحيحة');
-    }
-  }
-
-  // تصفية اللاعبين حسب البحث والمركز
   const filteredPlayers = players.filter(player => {
-    const matchesSearch = player.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesPosition = selectedPosition === 'all' || player.position === selectedPosition;
-    return matchesSearch && matchesPosition;
+    const matchesName = (player.name || '')
+      .toLowerCase()
+      .includes(search.toLowerCase());
+
+    const matchesPosition =
+      position === 'الكل' || player.position === position;
+
+    return matchesName && matchesPosition;
   });
 
   return (
-    <div dir="rtl" className="min-h-screen bg-[#0B132B] text-white font-sans pb-24">
-      
-      {/* شريط العنوان العلوي */}
-      <header className="bg-[#1C2541] border-b border-[#3A506B] px-4 py-3 flex justify-between items-center sticky top-0 z-50">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-[#FFD166] flex items-center justify-center text-[#0B132B] font-bold text-lg shadow-md">
-            ⚽
-          </div>
+    <div className="academy" dir="rtl">
+
+      <header className="topbar">
+        <div className="brand">
+          <img src="/assets/logo.jpg" alt="شعار الأكاديمية" />
+
           <div>
-            <h1 className="text-sm font-bold text-white">أكاديمية الحملة الأردنية الهاشمية الرياضية للأيتام</h1>
-            <p className="text-xs text-[#FFD166]">رعاية وتطوير المواهب</p>
+            <h1>أكاديمية الحملة الأردنية الهاشمية الرياضية للأيتام</h1>
+            <p>رعاية المواهب وصناعة الأبطال</p>
           </div>
         </div>
 
-        <div>
+        <div className="header-actions">
           {isAdmin ? (
-            <button 
-              onClick={() => setIsAdmin(false)}
-              className="bg-red-500/20 text-red-400 border border-red-500/40 px-3 py-1 rounded-full text-xs flex items-center gap-1 font-semibold"
-            >
-              <LogOut size={14} /> خروج المدير
+            <button className="logout-btn" onClick={logout}>
+              <LogOut size={17} />
+              خروج الإدارة
             </button>
           ) : (
-            <button 
-              onClick={() => setShowAdminLogin(true)}
-              className="bg-[#FF9F1C] text-[#0B132B] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow"
+            <button
+              className="admin-btn"
+              onClick={() => setShowLogin(true)}
             >
-              <Lock size={14} /> الإدارة
+              <Lock size={17} />
+              الإدارة
             </button>
           )}
         </div>
       </header>
 
-      {/* نافذة تسجيل دخول المدير */}
-      <AnimatePresence>
-        {showAdminLogin && (
-          <motion.div 
-            initial={{ opacity: 0 }} 
-            animate={{ opacity: 1 }} 
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
-          >
-            <div className="bg-[#1C2541] border border-[#3A506B] p-5 rounded-2xl w-full max-w-sm shadow-xl">
-              <h3 className="text-lg font-bold text-[#FFD166] mb-3 text-center">دخول لوحة الإدارة</h3>
-              <form onSubmit={handleAdminLogin}>
-                <input 
-                  type="password" 
-                  placeholder="كلمة المرور (admin2026)" 
-                  value={adminPassword}
-                  onChange={(e) => setAdminPassword(e.target.value)}
-                  className="w-full bg-[#0B132B] border border-[#3A506B] rounded-xl px-3 py-2 text-white text-sm mb-4 focus:outline-none focus:border-[#FF9F1C]"
-                  autoFocus
-                />
-                <div className="flex gap-2">
-                  <button type="submit" className="flex-1 bg-[#FF9F1C] text-[#0B132B] font-bold py-2 rounded-xl text-sm">دخول</button>
-                  <button type="button" onClick={() => setShowAdminLogin(false)} className="flex-1 bg-gray-600 text-white py-2 rounded-xl text-sm">إلغاء</button>
-                </div>
-              </form>
+      <main className="container">
+
+        <section className="hero">
+          <img
+            src="/assets/team-celebration.jpg"
+            alt="احتفالات فريق الأكاديمية"
+            onError={e => {
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+
+          <div className="hero-overlay">
+            <span className="hero-tag">معًا نحو المستقبل</span>
+            <h2>نصنع الأبطال ونرعى المواهب</h2>
+            <p>
+              بيئة رياضية تربوية تهدف إلى تطوير المواهب
+              وبناء جيل متميز.
+            </p>
+
+            <div className="hero-stats">
+              <div>
+                <Users size={22} />
+                <strong>{players.length}</strong>
+                <span>لاعب مسجل</span>
+              </div>
+
+              <div>
+                <Trophy size={22} />
+                <strong>الأبطال</strong>
+                <span>روح الفريق</span>
+              </div>
             </div>
+          </div>
+        </section>
+
+        <nav className="tabs">
+          <button
+            className={activeTab === 'players' ? 'active' : ''}
+            onClick={() => setActiveTab('players')}
+          >
+            <Users size={18} />
+            اللاعبون
+          </button>
+
+          <button
+            className={activeTab === 'schedule' ? 'active' : ''}
+            onClick={() => setActiveTab('schedule')}
+          >
+            <Calendar size={18} />
+            المواعيد
+          </button>
+
+          <button
+            className={activeTab === 'honor' ? 'active' : ''}
+            onClick={() => setActiveTab('honor')}
+          >
+            <Award size={18} />
+            لاعب الأسبوع
+          </button>
+        </nav>
+
+        <AnimatePresence mode="wait">
+
+          {activeTab === 'players' && (
+            <motion.section
+              key="players"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="section"
+            >
+
+              <div className="section-heading">
+                <div>
+                  <h2>نجوم الأكاديمية</h2>
+                  <p>تعرف على لاعبي الأكاديمية ومواهبهم</p>
+                </div>
+
+                {isAdmin && (
+                  <button
+                    className="add-btn"
+                    onClick={() => setShowAdd(true)}
+                  >
+                    <Plus size={18} />
+                    إضافة لاعب
+                  </button>
+                )}
+              </div>
+
+              <div className="filters">
+                <div className="search-box">
+                  <Search size={19} />
+
+                  <input
+                    type="search"
+                    placeholder="ابحث عن اسم اللاعب..."
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                  />
+                </div>
+
+                <select
+                  value={position}
+                  onChange={e => setPosition(e.target.value)}
+                >
+                  <option value="الكل">جميع المراكز</option>
+                  <option value="هجوم">هجوم</option>
+                  <option value="وسط">وسط</option>
+                  <option value="دفاع">دفاع</option>
+                  <option value="حارس">حارس</option>
+                </select>
+
+                <button
+                  className="refresh-btn"
+                  onClick={loadPlayers}
+                  title="تحديث القائمة"
+                >
+                  <RefreshCw size={18} />
+                </button>
+              </div>
+
+              {loading ? (
+                <div className="empty-state">
+                  <RefreshCw className="spin" size={30} />
+                  <p>جارٍ تحميل اللاعبين...</p>
+                </div>
+              ) : error ? (
+                <div className="error-state">
+                  <p>تعذر تحميل بيانات اللاعبين.</p>
+                  <small>{error}</small>
+                  <button onClick={loadPlayers}>إعادة المحاولة</button>
+                </div>
+              ) : filteredPlayers.length === 0 ? (
+                <div className="empty-state">
+                  <Users size={40} />
+                  <h3>لا يوجد لاعبون حاليًا</h3>
+                  <p>ستظهر بيانات اللاعبين هنا عند إضافتهم.</p>
+                </div>
+              ) : (
+                <div className="players-grid">
+                  {filteredPlayers.map((player, index) => (
+                    <motion.article
+                      key={player.id}
+                      className="player-card"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.04 }}
+                      whileHover={{ y: -5 }}
+                    >
+                      <div className="player-image">
+                        {player.photo ? (
+                          <img
+                            src={player.photo}
+                            alt={player.name}
+                          />
+                        ) : (
+                          <UserCircle size={75} />
+                        )}
+
+                        <span className="position-badge">
+                          {player.position || 'لاعب'}
+                        </span>
+                      </div>
+
+                      <div className="player-info">
+                        <h3>{player.name}</h3>
+
+                        <p className="player-age">
+                          {player.age
+                            ? `العمر: ${player.age} سنة`
+                            : 'لا توجد معلومات عن العمر'}
+                        </p>
+
+                        <div className="player-skills">
+                          <div>
+                            <span>السرعة</span>
+                            <strong>{player.pace ?? 0}</strong>
+                          </div>
+
+                          <div>
+                            <span>المهارة</span>
+                            <strong>{player.skill ?? 0}</strong>
+                          </div>
+                        </div>
+
+                        {isAdmin && (
+                          <button
+                            className="delete-btn"
+                            onClick={() => deletePlayer(player.id)}
+                          >
+                            <Trash2 size={16} />
+                            حذف اللاعب
+                          </button>
+                        )}
+                      </div>
+                    </motion.article>
+                  ))}
+                </div>
+              )}
+            </motion.section>
+          )}
+
+          {activeTab === 'schedule' && (
+            <motion.section
+              key="schedule"
+              className="section empty-state"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <Calendar size={45} />
+              <h2>مواعيد التدريبات والمباريات</h2>
+              <p>
+                سيتم تجهيز جدول التدريبات والمباريات في المرحلة التالية.
+              </p>
+            </motion.section>
+          )}
+
+          {activeTab === 'honor' && (
+            <motion.section
+              key="honor"
+              className="section empty-state"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <Trophy size={48} />
+              <h2>نجم الأكاديمية</h2>
+              <img
+                className="honor-image"
+                src="/assets/player-of-week.jpg"
+                alt="لاعب الأسبوع"
+              />
+              <p>تكريم المواهب والتميز الرياضي.</p>
+            </motion.section>
+          )}
+
+        </AnimatePresence>
+
+        <footer className="footer">
+          <img src="/assets/logo.jpg" alt="" />
+          <p>أكاديمية الحملة الأردنية الهاشمية الرياضية للأيتام</p>
+          <span>معًا نصنع المستقبل</span>
+        </footer>
+
+      </main>
+
+      {/* نافذة تسجيل دخول المدير */}
+
+      <AnimatePresence>
+        {showLogin && (
+          <motion.div
+            className="modal-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.form
+              className="modal"
+              onSubmit={login}
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+            >
+              <button
+                type="button"
+                className="close-btn"
+                onClick={() => setShowLogin(false)}
+              >
+                <X size={20} />
+              </button>
+
+              <Lock size={35} className="modal-icon" />
+
+              <h2>دخول الإدارة</h2>
+              <p>يرجى إدخال بيانات حساب المدير</p>
+
+              <input
+                type="email"
+                placeholder="البريد الإلكتروني"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                required
+              />
+
+              <input
+                type="password"
+                placeholder="كلمة المرور"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required
+              />
+
+              <button type="submit" className="submit-btn">
+                تسجيل الدخول
+              </button>
+            </motion.form>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* المحتوى الرئيسي */}
-      <main className="p-4 max-w-4xl mx-auto">
-        
-        {/* بطاقة ترحيبية / احتفال الفريق */}
-        <div className="relative rounded-2xl overflow-hidden mb-6 shadow-xl border border-[#3A506B]">
-          <div className="bg-gradient-to-t from-[#0B132B] via-transparent to-black/40 absolute inset-0 z-10"></div>
-          <div className="w-full h-48 bg-[#1C2541] flex items-center justify-center text-[#FFD166] text-lg font-bold">
-            🌟 احتفال الفريق والبطولات 🌟
-          </div>
-          <div className="absolute bottom-3 right-3 z-20 bg-[#0B132B]/80 backdrop-blur px-3 py-1 rounded-lg text-xs border border-[#3A506B]">
-            {players.length} لاعباً مسجلاً سحابياً
-          </div>
-        </div>
+      {/* نافذة إضافة لاعب */}
 
-        {/* نموذج إضافة لاعب جديد (يظهر فقط للمدير) */}
-        {isAdmin && (
-          <motion.div initial={{ y: -10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="bg-[#1C2541] border border-[#FF9F1C] p-4 rounded-2xl mb-6 shadow-lg">
-            <h3 className="text-sm font-bold text-[#FFD166] mb-3 flex items-center gap-2">
-              <Plus size={16} /> إضافة لاعب جديد للقاعدة السحابية
-            </h3>
-            <form onSubmit={handleAddPlayer} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <input 
-                type="text" 
-                placeholder="اسم اللاعب الكامل" 
+      <AnimatePresence>
+        {showAdd && isAdmin && (
+          <motion.div
+            className="modal-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.form
+              className="modal add-modal"
+              onSubmit={addPlayer}
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+            >
+              <button
+                type="button"
+                className="close-btn"
+                onClick={() => setShowAdd(false)}
+              >
+                <X size={20} />
+              </button>
+
+              <Plus size={35} className="modal-icon" />
+
+              <h2>إضافة لاعب جديد</h2>
+
+              <input
+                type="text"
+                placeholder="اسم اللاعب"
                 value={newPlayer.name}
-                onChange={(e) => setNewPlayer({...newPlayer, name: e.target.value})}
-                className="bg-[#0B132B] border border-[#3A506B] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#FF9F1C]"
+                onChange={e =>
+                  setNewPlayer({
+                    ...newPlayer,
+                    name: e.target.value
+                  })
+                }
                 required
               />
-              <select 
+
+              <select
                 value={newPlayer.position}
-                onChange={(e) => setNewPlayer({...newPlayer, position: e.target.value})}
-                className="bg-[#0B132B] border border-[#3A506B] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#FF9F1C]"
+                onChange={e =>
+                  setNewPlayer({
+                    ...newPlayer,
+                    position: e.target.value
+                  })
+                }
               >
                 <option value="هجوم">هجوم</option>
                 <option value="وسط">وسط</option>
                 <option value="دفاع">دفاع</option>
                 <option value="حارس">حارس</option>
               </select>
-              <input 
-                type="number" 
-                placeholder="العمر" 
-                value={new
+
+              <input
+                type="number"
+                placeholder="العمر"
+                min="5"
+                max="25"
+                value={newPlayer.age}
+                onChange={e =>
+                  setNewPlayer({
+                    ...newPlayer,
+                    age: e.target.value
+                  })
+                }
+              />
+
+              <input
+                type="number"
+                placeholder="السرعة من 100"
+                min="0"
+                max="100"
+                value={newPlayer.pace}
+                onChange={e =>
+                  setNewPlayer({
+                    ...newPlayer,
+                    pace: e.target.value
+                  })
+                }
+              />
+
+              <input
+                type="number"
+                placeholder="المهارة من 100"
+                min="0"
+                max="100"
+                value={newPlayer.skill}
+                onChange={e =>
+                  setNewPlayer({
+                    ...newPlayer,
+                    skill: e.target.value
+                  })
+                }
+              />
+
+              <input
+                type="url"
+                placeholder="رابط صورة اللاعب (اختياري)"
+                value={newPlayer.photo}
+                onChange={e =>
+                  setNewPlayer({
+                    ...newPlayer,
+                    photo: e.target.value
+                  })
+                }
+              />
+
+              <button type="submit" className="submit-btn">
+                حفظ اللاعب
+              </button>
+            </motion.form>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+    </div>
+  );
+}
